@@ -10,4 +10,12 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
+    <!-- Ensure Data files are copied to publish output for Koyeb deployment -->
+    <ItemGroup>
+        <Content Update="Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
