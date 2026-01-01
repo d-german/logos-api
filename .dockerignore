@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# Serena
+.serena/
+
+# Documentation
+*.md
+LICENSE
+
+# Test results
+**/TestResults/
+
+# Local development
+*.local
+appsettings.Development.json
