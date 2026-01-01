@@ -1,4 +1,5 @@
 using LogosAPI.Models;
+using LogosAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LogosAPI.Controllers;
@@ -12,65 +13,74 @@ namespace LogosAPI.Controllers;
 public sealed class VersesController : ControllerBase
 {
     private readonly ILogger<VersesController> _logger;
+    private readonly IBibleDataService _bibleDataService;
+    private readonly IVerseLookupService _verseLookupService;
 
-    public VersesController(ILogger<VersesController> logger)
+    public VersesController(
+        ILogger<VersesController> logger,
+        IBibleDataService bibleDataService,
+        IVerseLookupService verseLookupService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _bibleDataService = bibleDataService ?? throw new ArgumentNullException(nameof(bibleDataService));
+        _verseLookupService = verseLookupService ?? throw new ArgumentNullException(nameof(verseLookupService));
     }
 
     /// <summary>
-    /// Look up Bible verses (POST)
-    /// Cyclomatic Complexity: 2
+    /// Look up Bible verses with lexicon data (POST)
+    /// Cyclomatic Complexity: 1
     /// </summary>
     [HttpPost("lookup")]
     public IActionResult LookupVersesPost([FromBody] VerseLookupRequest request)
     {
         LogRequestReceived("POST", request.VerseReferences);
 
-        var response = CreateResponse(request.VerseReferences);
+        var result = _verseLookupService.LookupVerses(request.VerseReferences);
 
-        LogResponseReturned(response.VerseReferences.Length);
+        LogResponseReturned(result.Verses.Count, result.NotFound.Count);
 
-        return Ok(response);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Look up Bible verses (GET)
-    /// Cyclomatic Complexity: 2
+    /// Look up Bible verses with lexicon data (GET)
+    /// Cyclomatic Complexity: 1
     /// </summary>
     [HttpGet("lookup")]
     public IActionResult LookupVersesGet([FromQuery] string[] verseReferences)
     {
         LogRequestReceived("GET", verseReferences);
 
-        var response = CreateResponse(verseReferences);
+        var result = _verseLookupService.LookupVerses(verseReferences);
 
-        LogResponseReturned(response.VerseReferences.Length);
+        LogResponseReturned(result.Verses.Count, result.NotFound.Count);
 
-        return Ok(response);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Health check endpoint
+    /// Health check endpoint with service status
     /// Cyclomatic Complexity: 1
     /// </summary>
-    [HttpGet("/_health")]
+    [HttpGet("_health")]
     public IActionResult Health()
     {
         _logger.LogDebug("Health check requested");
-        return Ok("Healthy");
+        return Ok(CreateHealthResponse());
     }
 
     /// <summary>
-    /// Create response object
+    /// Creates health response object
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private static VerseLookupResponse CreateResponse(string[] verseReferences)
+    private object CreateHealthResponse()
     {
-        return new VerseLookupResponse
+        return new
         {
-            Message = "Hello World",
-            VerseReferences = verseReferences
+            Status = "Healthy",
+            Initialized = _bibleDataService.IsInitialized,
+            VersesCount = _bibleDataService.VersesCount,
+            LexiconCount = _bibleDataService.LexiconCount
         };
     }
 
@@ -90,10 +100,11 @@ public sealed class VersesController : ControllerBase
     /// Log outgoing response
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private void LogResponseReturned(int count)
+    private void LogResponseReturned(int foundCount, int notFoundCount)
     {
         _logger.LogInformation(
-            "Returning response with {Count} verse references",
-            count);
+            "Returning response with {FoundCount} verses found, {NotFoundCount} not found",
+            foundCount,
+            notFoundCount);
     }
 }

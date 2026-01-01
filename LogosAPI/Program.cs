@@ -1,6 +1,17 @@
+using LogosAPI.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Register BibleDataService as Singleton - loads once, reused for all requests
+builder.Services.AddSingleton<IBibleDataService, BibleDataService>();
+
+// Register VerseReferenceNormalizer as Singleton - stateless, thread-safe
+builder.Services.AddSingleton<IVerseReferenceNormalizer, VerseReferenceNormalizer>();
+
+// Register VerseLookupService as Singleton - orchestrates lookup operations
+builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -24,3 +35,6 @@ app.MapControllers();
 app.MapGet("/health", () => "Healthy");
 
 app.Run();
+
+// Make Program accessible for integration testing
+public partial class Program { }
