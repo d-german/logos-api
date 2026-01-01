@@ -10,5 +10,9 @@ public sealed class TokenData
     public required string Translit { get; init; }
     public required string Strongs { get; init; }
     public required string Rmac { get; init; }
-    public required string RmacDesc { get; init; }
+    
+    /// <summary>
+    /// Robinson's Morphological Analysis Code description (may be null if not in JSON)
+    /// </summary>
+    public string? RmacDesc { get; init; }
 }

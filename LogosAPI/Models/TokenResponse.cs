@@ -16,6 +16,6 @@ public sealed record TokenResponse(
     string Translit,
     string Strongs,
     string Rmac,
-    string RmacDesc,
+    string? RmacDesc,
     string? LexiconEntry
 );
