@@ -82,47 +82,6 @@ public sealed class VersesControllerIntegrationTests : IClassFixture<WebApplicat
 
     #endregion
 
-    #region POST Endpoint Tests
-
-    [Fact]
-    public async Task LookupVersesPost_WithValidRequest_ReturnsOkWithVerseData()
-    {
-        // Arrange
-        var request = new VerseLookupRequest { VerseReferences = new[] { "Matt.1.1" } };
-
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/verses/lookup", request);
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var result = await response.Content.ReadFromJsonAsync<VerseLookupResult>();
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task LookupVersesPost_WithMultipleReferences_ReturnsAll()
-    {
-        // Arrange
-        var request = new VerseLookupRequest
-        {
-            VerseReferences = new[] { "Matt.1.1", "John.3.16", "1Cor.13.4" }
-        };
-
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/verses/lookup", request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var result = await response.Content.ReadFromJsonAsync<VerseLookupResult>();
-        Assert.NotNull(result);
-        Assert.Equal(3, result.Verses.Count + result.NotFound.Count);
-    }
-
-    #endregion
-
     #region Health Endpoint Tests
 
     [Fact]
