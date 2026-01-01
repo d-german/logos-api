@@ -1,15 +1,19 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json;
 using LogosAPI.Models;
 
 namespace LogosAPI.Services;
 
 /// <summary>
-/// Singleton service that loads and provides access to Bible data
+/// Singleton service that loads and provides access to Bible data from embedded resources
 /// Single Responsibility: Load and store Bible verses and lexicon data
 /// </summary>
 public sealed class BibleDataService : IBibleDataService
 {
+    private const string VersesResourceName = "LogosAPI.Data.verses.json";
+    private const string LexiconResourceName = "LogosAPI.Data.lexicon.json";
+
     private readonly ILogger<BibleDataService> _logger;
     private readonly ConcurrentDictionary<string, VerseData> _verses;
     private readonly ConcurrentDictionary<string, string> _lexicon;
@@ -21,72 +25,58 @@ public sealed class BibleDataService : IBibleDataService
     public int LexiconCount => _lexicon.Count;
     public bool IsInitialized => _isInitialized;
 
-    public BibleDataService(ILogger<BibleDataService> logger, IWebHostEnvironment env)
+    public BibleDataService(ILogger<BibleDataService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _ = env ?? throw new ArgumentNullException(nameof(env));
 
         _verses = new ConcurrentDictionary<string, VerseData>();
         _lexicon = new ConcurrentDictionary<string, string>();
 
-        var dataPath = GetDataPath(env.ContentRootPath);
-        
-        _isInitialized = LoadAllData(dataPath);
+        _isInitialized = LoadAllData();
     }
 
     /// <summary>
-    /// Gets the data folder path
-    /// Cyclomatic Complexity: 1
-    /// </summary>
-    private static string GetDataPath(string contentRootPath)
-    {
-        return Path.Combine(contentRootPath, "Data");
-    }
-
-    /// <summary>
-    /// Loads all data files
+    /// Loads all data from embedded resources
     /// Cyclomatic Complexity: 2
     /// </summary>
-    private bool LoadAllData(string dataPath)
+    private bool LoadAllData()
     {
-        var versesLoaded = LoadVerses(dataPath);
-        var lexiconLoaded = LoadLexicon(dataPath);
+        var versesLoaded = LoadVerses();
+        var lexiconLoaded = LoadLexicon();
 
         return versesLoaded && lexiconLoaded;
     }
 
     /// <summary>
-    /// Loads verses from JSON file
-    /// Cyclomatic Complexity: 3
+    /// Loads verses from embedded resource
+    /// Cyclomatic Complexity: 2
     /// </summary>
-    private bool LoadVerses(string dataPath)
+    private bool LoadVerses()
     {
-        var filePath = Path.Combine(dataPath, "verses.json");
-
-        if (!File.Exists(filePath))
+        var json = ReadEmbeddedResource(VersesResourceName);
+        if (json is null)
         {
-            LogFileNotFound("verses.json", filePath);
+            LogResourceNotFound(VersesResourceName);
             return false;
         }
 
-        return LoadVersesFromFile(filePath);
+        return ParseAndLoadVerses(json);
     }
 
     /// <summary>
-    /// Reads and parses verses JSON file
+    /// Parses verses JSON and loads into dictionary
     /// Cyclomatic Complexity: 4
     /// </summary>
-    private bool LoadVersesFromFile(string filePath)
+    private bool ParseAndLoadVerses(string json)
     {
         try
         {
-            var json = File.ReadAllText(filePath);
             var options = CreateJsonOptions();
             var data = JsonSerializer.Deserialize<Dictionary<string, VerseData>>(json, options);
 
             if (data is null)
             {
-                LogDeserializationFailed("verses.json");
+                LogDeserializationFailed("verses");
                 return false;
             }
 
@@ -96,7 +86,7 @@ public sealed class BibleDataService : IBibleDataService
         }
         catch (Exception ex)
         {
-            LogLoadError("verses.json", ex);
+            LogLoadError("verses", ex);
             return false;
         }
     }
@@ -114,37 +104,35 @@ public sealed class BibleDataService : IBibleDataService
     }
 
     /// <summary>
-    /// Loads lexicon from JSON file
-    /// Cyclomatic Complexity: 3
+    /// Loads lexicon from embedded resource
+    /// Cyclomatic Complexity: 2
     /// </summary>
-    private bool LoadLexicon(string dataPath)
+    private bool LoadLexicon()
     {
-        var filePath = Path.Combine(dataPath, "lexicon.json");
-
-        if (!File.Exists(filePath))
+        var json = ReadEmbeddedResource(LexiconResourceName);
+        if (json is null)
         {
-            LogFileNotFound("lexicon.json", filePath);
+            LogResourceNotFound(LexiconResourceName);
             return false;
         }
 
-        return LoadLexiconFromFile(filePath);
+        return ParseAndLoadLexicon(json);
     }
 
     /// <summary>
-    /// Reads and parses lexicon JSON file
+    /// Parses lexicon JSON and loads into dictionary
     /// Cyclomatic Complexity: 4
     /// </summary>
-    private bool LoadLexiconFromFile(string filePath)
+    private bool ParseAndLoadLexicon(string json)
     {
         try
         {
-            var json = File.ReadAllText(filePath);
             var options = CreateJsonOptions();
             var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json, options);
 
             if (data is null)
             {
-                LogDeserializationFailed("lexicon.json");
+                LogDeserializationFailed("lexicon");
                 return false;
             }
 
@@ -154,7 +142,7 @@ public sealed class BibleDataService : IBibleDataService
         }
         catch (Exception ex)
         {
-            LogLoadError("lexicon.json", ex);
+            LogLoadError("lexicon", ex);
             return false;
         }
     }
@@ -172,6 +160,37 @@ public sealed class BibleDataService : IBibleDataService
     }
 
     /// <summary>
+    /// Reads an embedded resource as string
+    /// Cyclomatic Complexity: 3
+    /// </summary>
+    private string? ReadEmbeddedResource(string resourceName)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            LogAvailableResources(assembly);
+            return null;
+        }
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    /// <summary>
+    /// Logs available embedded resources for debugging
+    /// Cyclomatic Complexity: 2
+    /// </summary>
+    private void LogAvailableResources(Assembly assembly)
+    {
+        var resources = assembly.GetManifestResourceNames();
+        _logger.LogWarning(
+            "Available embedded resources: {Resources}",
+            string.Join(", ", resources));
+    }
+
+    /// <summary>
     /// Creates JSON serializer options
     /// Cyclomatic Complexity: 1
     /// </summary>
@@ -184,21 +203,21 @@ public sealed class BibleDataService : IBibleDataService
     }
 
     /// <summary>
-    /// Logs file not found
+    /// Logs resource not found
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private void LogFileNotFound(string fileName, string path)
+    private void LogResourceNotFound(string resourceName)
     {
-        _logger.LogWarning("Data file {FileName} not found at {Path}", fileName, path);
+        _logger.LogWarning("Embedded resource not found: {ResourceName}", resourceName);
     }
 
     /// <summary>
     /// Logs deserialization failure
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private void LogDeserializationFailed(string fileName)
+    private void LogDeserializationFailed(string dataType)
     {
-        _logger.LogError("Failed to deserialize {FileName}", fileName);
+        _logger.LogError("Failed to deserialize {DataType} data", dataType);
     }
 
     /// <summary>
@@ -207,15 +226,15 @@ public sealed class BibleDataService : IBibleDataService
     /// </summary>
     private void LogDataLoaded(string dataType, int count)
     {
-        _logger.LogInformation("Loaded {Count} {DataType}", count, dataType);
+        _logger.LogInformation("Loaded {Count} {DataType} from embedded resources", count, dataType);
     }
 
     /// <summary>
     /// Logs load error with exception
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private void LogLoadError(string fileName, Exception ex)
+    private void LogLoadError(string dataType, Exception ex)
     {
-        _logger.LogError(ex, "Error loading {FileName}", fileName);
+        _logger.LogError(ex, "Error loading {DataType} from embedded resource", dataType);
     }
 }

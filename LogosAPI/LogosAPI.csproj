@@ -10,12 +10,14 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
-    <!-- Ensure Data files are copied to publish output for Koyeb deployment -->
+    <!-- Embed Data files as resources for containerized deployment (no persistent storage) -->
     <ItemGroup>
-        <Content Update="Data\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
+        <EmbeddedResource Include="Data\verses.json">
+            <LogicalName>LogosAPI.Data.verses.json</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Data\lexicon.json">
+            <LogicalName>LogosAPI.Data.lexicon.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>
