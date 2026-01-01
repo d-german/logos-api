@@ -31,8 +31,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Health endpoint for Koyeb health checks
+// Health endpoints for Koyeb health checks (both paths for flexibility)
 app.MapGet("/health", () => "Healthy");
+app.MapGet("/_health", () => "Healthy");
 
 app.Run();
 
