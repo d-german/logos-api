@@ -51,6 +51,17 @@ public sealed class VersesController : ControllerBase
     }
 
     /// <summary>
+    /// Health check endpoint
+    /// Cyclomatic Complexity: 1
+    /// </summary>
+    [HttpGet("/_health")]
+    public IActionResult Health()
+    {
+        _logger.LogDebug("Health check requested");
+        return Ok("Healthy");
+    }
+
+    /// <summary>
     /// Create response object
     /// Cyclomatic Complexity: 1
     /// </summary>
