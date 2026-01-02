@@ -26,19 +26,6 @@ public sealed class CommentaryController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the list of available commentaries
-    /// </summary>
-    /// <returns>List of available commentaries with metadata</returns>
-    [HttpGet("available")]
-    [ProducesResponseType(typeof(AvailableCommentariesResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<AvailableCommentariesResponse>> GetAvailableCommentaries(
-        CancellationToken cancellationToken)
-    {
-        var result = await _commentaryService.GetAvailableCommentariesAsync(cancellationToken);
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Gets commentary for a specific verse
     /// </summary>
     /// <param name="commentaryId">Commentary ID (e.g., "tyndale", "john-gill", "matthew-henry")</param>

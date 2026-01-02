@@ -3,7 +3,7 @@
   "info": {
     "title": "Logos Bible API",
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
-    "version": "1.5.0"
+    "version": "1.6.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -46,28 +46,11 @@
         }
       }
     },
-    "/api/commentary/available": {
-      "get": {
-        "operationId": "getAvailableCommentaries",
-        "summary": "List available Bible commentaries",
-        "description": "Returns a list of available commentaries including Adam Clarke, Jamieson-Fausset-Brown, John Gill, Keil-Delitzsch, Matthew Henry, and Tyndale Open Study Notes.",
-        "responses": {
-          "200": {
-            "description": "List of available commentaries",
-            "content": {
-              "application/json": {
-                "schema": {"$ref": "#/components/schemas/AvailableCommentariesResponse"}
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/commentary/all": {
       "get": {
         "operationId": "getAllCommentaries",
         "summary": "Get commentary from ALL sources for multiple verses",
-        "description": "Retrieves commentary from all 6 available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call.",
+        "description": "Retrieves commentary from all available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call. Only commentaries with actual content are returned.",
         "parameters": [{
           "name": "verseReferences",
           "in": "query",
@@ -137,24 +120,24 @@
           "translit": {"type": "string", "description": "Transliteration"},
           "strongs": {"type": "string", "description": "Strong's number (e.g., G976)"},
           "rmac": {"type": "string", "description": "Robinson's Morphological Analysis Code"},
-          "rmacDesc": {"type": ["string", "null"], "description": "Human-readable morphology description"},
+          "rmacDesc": {"type": "string", "description": "Human-readable morphology description"},
           "morph": {"$ref": "#/components/schemas/MorphologyInfo"}
         },
         "required": ["gloss", "greek", "translit", "strongs", "rmac"]
       },
       "MorphologyInfo": {
         "type": "object",
-        "description": "Parsed morphological components from RMAC code.",
+        "description": "Parsed morphological components from RMAC code. Only non-null fields are included.",
         "properties": {
-          "pos": {"type": ["string", "null"], "description": "Part of speech"},
-          "tense": {"type": ["string", "null"], "description": "Verb tense"},
-          "voice": {"type": ["string", "null"], "description": "Verb voice"},
-          "verbForm": {"type": ["string", "null"], "description": "Verb form: Finite, Participle, or Infinitive"},
-          "mood": {"type": ["string", "null"], "description": "Finite verb mood only"},
-          "case": {"type": ["string", "null"], "description": "Grammatical case"},
-          "number": {"type": ["string", "null"], "description": "Number: Singular, Plural"},
-          "gender": {"type": ["string", "null"], "description": "Gender: Masculine, Feminine, Neuter"},
-          "person": {"type": ["string", "null"], "description": "Person: First, Second, Third"},
+          "pos": {"type": "string", "description": "Part of speech"},
+          "tense": {"type": "string", "description": "Verb tense"},
+          "voice": {"type": "string", "description": "Verb voice"},
+          "verbForm": {"type": "string", "description": "Verb form: Finite, Participle, or Infinitive"},
+          "mood": {"type": "string", "description": "Finite verb mood only"},
+          "case": {"type": "string", "description": "Grammatical case"},
+          "number": {"type": "string", "description": "Number: Singular, Plural"},
+          "gender": {"type": "string", "description": "Gender: Masculine, Feminine, Neuter"},
+          "person": {"type": "string", "description": "Person: First, Second, Third"},
           "flags": {"type": "array", "items": {"type": "string"}, "description": "Additional flags"}
         }
       },
@@ -165,31 +148,6 @@
           "definition": {"type": "string"}
         },
         "required": ["strongsNumber", "definition"]
-      },
-      "AvailableCommentariesResponse": {
-        "type": "object",
-        "properties": {
-          "commentaries": {
-            "type": "array",
-            "items": {"$ref": "#/components/schemas/CommentaryInfo"}
-          }
-        },
-        "required": ["commentaries"]
-      },
-      "CommentaryInfo": {
-        "type": "object",
-        "properties": {
-          "id": {"type": "string", "description": "Commentary ID (e.g., tyndale, john-gill)"},
-          "name": {"type": "string", "description": "Full name of the commentary"},
-          "englishName": {"type": "string"},
-          "website": {"type": "string"},
-          "licenseUrl": {"type": "string"},
-          "licenseNotes": {"type": ["string", "null"]},
-          "numberOfBooks": {"type": "integer"},
-          "totalNumberOfChapters": {"type": "integer"},
-          "totalNumberOfVerses": {"type": "integer"}
-        },
-        "required": ["id", "name"]
       },
       "CommentaryLookupResponse": {
         "type": "object",
@@ -207,13 +165,13 @@
       },
       "AllCommentariesLookupResponse": {
         "type": "object",
-        "description": "Commentary from all available sources for multiple verses",
+        "description": "Commentary from all available sources for multiple verses. Only commentaries with content are included.",
         "properties": {
           "references": {"type": "array", "items": {"type": "string"}, "description": "The requested verse references"},
           "commentaries": {
             "type": "array",
             "items": {"$ref": "#/components/schemas/CommentaryResult"},
-            "description": "Commentary from each source"
+            "description": "Commentary from each source that has content"
           },
           "notFound": {"type": "array", "items": {"type": "string"}, "description": "References with no commentary in any source"}
         },
@@ -237,9 +195,9 @@
         "properties": {
           "reference": {"type": "string"},
           "verseNumber": {"type": "integer"},
-          "content": {"type": ["string", "null"], "description": "Commentary text, null if not available"}
+          "content": {"type": "string", "description": "Commentary text"}
         },
-        "required": ["reference", "verseNumber"]
+        "required": ["reference", "verseNumber", "content"]
       },
       "VerseCommentary": {
         "type": "object",
