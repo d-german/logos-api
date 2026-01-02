@@ -22,7 +22,13 @@ builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 // Register CommentaryService with HttpClient for external HelloAO API calls
 builder.Services.AddHttpClient<ICommentaryService, CommentaryService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Don't include null values in JSON responses
+        options.JsonSerializerOptions.DefaultIgnoreCondition = 
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
