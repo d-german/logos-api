@@ -6,30 +6,33 @@ namespace LogosAPI.Models;
 /// </summary>
 public sealed record MorphologyInfo
 {
-    /// <summary>Part of speech (e.g., "Verb", "Noun", "Adjective")</summary>
+    /// <summary>Part of speech (e.g., "Verb", "Noun", "Adjective", "PersonalPronoun")</summary>
     public string? Pos { get; init; }
     
-    /// <summary>Verb tense (e.g., "Present", "Aorist", "Perfect")</summary>
+    /// <summary>Verb tense (e.g., "Present", "Aorist", "Perfect", "SecondAorist")</summary>
     public string? Tense { get; init; }
     
-    /// <summary>Verb voice (e.g., "Active", "Middle", "Passive")</summary>
+    /// <summary>Verb voice (e.g., "Active", "Middle", "Passive", "MiddleOrPassive")</summary>
     public string? Voice { get; init; }
     
-    /// <summary>Verb mood (e.g., "Indicative", "Subjunctive", "Participle")</summary>
+    /// <summary>Verb form: "Finite", "Participle", or "Infinitive"</summary>
+    public string? VerbForm { get; init; }
+    
+    /// <summary>Verb mood for finite verbs only: "Indicative", "Subjunctive", "Imperative", "Optative"</summary>
     public string? Mood { get; init; }
     
-    /// <summary>Grammatical case (e.g., "Nominative", "Genitive", "Accusative")</summary>
+    /// <summary>Grammatical case (e.g., "Nominative", "Genitive", "Dative", "Accusative", "Vocative")</summary>
     public string? Case { get; init; }
     
-    /// <summary>Grammatical number (e.g., "Singular", "Plural")</summary>
+    /// <summary>Grammatical number: "Singular" or "Plural"</summary>
     public string? Number { get; init; }
     
-    /// <summary>Grammatical gender (e.g., "Masculine", "Feminine", "Neuter")</summary>
+    /// <summary>Grammatical gender: "Masculine", "Feminine", or "Neuter"</summary>
     public string? Gender { get; init; }
     
-    /// <summary>Person for verbs and pronouns (e.g., "First", "Second", "Third")</summary>
+    /// <summary>Person for verbs and pronouns: "First", "Second", or "Third"</summary>
     public string? Person { get; init; }
     
-    /// <summary>Optional descriptor suffix (e.g., "Person", "Title", "Comparative")</summary>
-    public string? Suffix { get; init; }
+    /// <summary>Additional flags that don't fit in standard fields (e.g., "Person", "Title", "Comparative", "Deponent")</summary>
+    public IReadOnlyList<string> Flags { get; init; } = [];
 }

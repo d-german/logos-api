@@ -3,7 +3,7 @@
   "info": {
     "title": "Logos Bible API",
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data and lexicon definitions.",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -81,17 +81,18 @@
       },
       "MorphologyInfo": {
         "type": "object",
-        "description": "Parsed morphological components from RMAC code",
+        "description": "Parsed morphological components from RMAC code. All fields populated when applicable, null otherwise.",
         "properties": {
-          "pos": {"type": ["string", "null"], "description": "Part of speech (Verb, Noun, Adjective, etc.)"},
-          "tense": {"type": ["string", "null"], "description": "Verb tense (Present, Aorist, Perfect, etc.)"},
-          "voice": {"type": ["string", "null"], "description": "Verb voice (Active, Middle, Passive)"},
-          "mood": {"type": ["string", "null"], "description": "Verb mood (Indicative, Subjunctive, Participle, etc.)"},
-          "case": {"type": ["string", "null"], "description": "Grammatical case (Nominative, Genitive, etc.)"},
-          "number": {"type": ["string", "null"], "description": "Number (Singular, Plural)"},
-          "gender": {"type": ["string", "null"], "description": "Gender (Masculine, Feminine, Neuter)"},
-          "person": {"type": ["string", "null"], "description": "Person (First, Second, Third)"},
-          "suffix": {"type": ["string", "null"], "description": "Descriptor suffix (Person, Title, etc.)"}
+          "pos": {"type": ["string", "null"], "description": "Part of speech: Verb, Noun, Adjective, Article, PersonalPronoun, etc."},
+          "tense": {"type": ["string", "null"], "description": "Verb tense: Present, Imperfect, Future, Aorist, Perfect, Pluperfect, SecondAorist, etc."},
+          "voice": {"type": ["string", "null"], "description": "Verb voice: Active, Middle, Passive, MiddleOrPassive, Deponent, etc."},
+          "verbForm": {"type": ["string", "null"], "description": "Verb form: Finite, Participle, or Infinitive"},
+          "mood": {"type": ["string", "null"], "description": "Finite verb mood only: Indicative, Subjunctive, Imperative, Optative (null for participles/infinitives)"},
+          "case": {"type": ["string", "null"], "description": "Grammatical case: Nominative, Genitive, Dative, Accusative, Vocative"},
+          "number": {"type": ["string", "null"], "description": "Number: Singular, Plural"},
+          "gender": {"type": ["string", "null"], "description": "Gender: Masculine, Feminine, Neuter"},
+          "person": {"type": ["string", "null"], "description": "Person: First, Second, Third"},
+          "flags": {"type": "array", "items": {"type": "string"}, "description": "Additional flags: ProperName, Title, Comparative, Superlative, Deponent, Location, etc."}
         }
       },
       "LexiconLookupResponse": {

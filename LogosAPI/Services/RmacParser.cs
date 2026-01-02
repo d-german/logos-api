@@ -91,17 +91,16 @@ public sealed class RmacParser : IRmacParser
         ['O'] = "PassiveDeponent"
     };
 
-    private static readonly Dictionary<char, string> MoodMap = new()
+    // Finite moods only (Indicative, Subjunctive, Imperative, Optative)
+    private static readonly Dictionary<char, string> FiniteMoodMap = new()
     {
         ['I'] = "Indicative",
         ['S'] = "Subjunctive",
         ['M'] = "Imperative",
-        ['O'] = "Optative",
-        ['N'] = "Infinitive",
-        ['P'] = "Participle"
+        ['O'] = "Optative"
     };
 
-    private static readonly Dictionary<string, string> SuffixMap = new()
+    private static readonly Dictionary<string, string> FlagMap = new()
     {
         ["C"] = "Comparative",
         ["I"] = "Interrogative",
@@ -111,14 +110,14 @@ public sealed class RmacParser : IRmacParser
         ["LI"] = "LetterIndeclinable",
         ["N"] = "Negative",
         ["NUI"] = "IndeclinableNumber",
-        ["P"] = "Person",
+        ["P"] = "ProperName",
         ["PG"] = "PersonGentilic",
         ["S"] = "Superlative",
-        ["T"] = "Title",
-        ["A"] = "Accusative",
-        ["D"] = "Dative",
-        ["G"] = "Genitive"
+        ["T"] = "Title"
     };
+
+    // Voice flags for deponent verbs
+    private static readonly HashSet<char> DeponentVoices = new() { 'D', 'N', 'O' };
 
     private static readonly HashSet<string> SimpleTypes = new()
     {
@@ -156,13 +155,16 @@ public sealed class RmacParser : IRmacParser
         if (code.StartsWith("V-"))
             return TryParseVerb(code, out result);
 
+        // Handle Personal Pronouns (P-...) - special format
+        if (code.StartsWith("P-"))
+            return TryParsePersonalPronoun(code, out result);
+
         // Handle Nominals (N-, A-, T-, Q-, etc.)
         return TryParseNominal(code, out result);
     }
 
     /// <summary>
     /// Parses simple/indeclinable types like CONJ, PREP, INJ
-    /// Cyclomatic Complexity: 3
     /// </summary>
     private static bool TryParseSimpleType(string code, out MorphologyInfo? result)
     {
@@ -173,40 +175,42 @@ public sealed class RmacParser : IRmacParser
             return false;
 
         var pos = PartOfSpeechMap.GetValueOrDefault(basePart);
-        string? suffix = null;
+        var flags = new List<string>();
 
         // Check for suffix (e.g., CONJ-T, PREP-G)
         if (code.Contains('-'))
         {
             var suffixPart = code.Split('-')[1];
-            suffix = SuffixMap.GetValueOrDefault(suffixPart);
+            var flag = FlagMap.GetValueOrDefault(suffixPart);
+            if (flag != null)
+                flags.Add(flag);
         }
 
-        result = new MorphologyInfo { Pos = pos, Suffix = suffix };
+        result = new MorphologyInfo { Pos = pos, Flags = flags };
         return true;
     }
 
     /// <summary>
     /// Parses adverbs (ADV, ADV-C, ADV-I, etc.)
-    /// Cyclomatic Complexity: 2
     /// </summary>
     private static bool TryParseAdverb(string code, out MorphologyInfo? result)
     {
-        string? suffix = null;
+        var flags = new List<string>();
 
         if (code.Contains('-'))
         {
             var suffixPart = code.Split('-')[1];
-            suffix = SuffixMap.GetValueOrDefault(suffixPart);
+            var flag = FlagMap.GetValueOrDefault(suffixPart);
+            if (flag != null)
+                flags.Add(flag);
         }
 
-        result = new MorphologyInfo { Pos = "Adverb", Suffix = suffix };
+        result = new MorphologyInfo { Pos = "Adverb", Flags = flags };
         return true;
     }
 
     /// <summary>
     /// Parses verb codes (V-TVM-PN or V-TVN or V-TVP-CNG)
-    /// Cyclomatic Complexity: 5
     /// </summary>
     private static bool TryParseVerb(string code, out MorphologyInfo? result)
     {
@@ -236,20 +240,46 @@ public sealed class RmacParser : IRmacParser
         }
 
         var tense = TenseMap.GetValueOrDefault(tenseKey);
-        var voice = VoiceMap.GetValueOrDefault(modifiers[voiceIndex]);
-        var mood = MoodMap.GetValueOrDefault(modifiers[voiceIndex + 1]);
+        var voiceChar = modifiers[voiceIndex];
+        var voice = VoiceMap.GetValueOrDefault(voiceChar);
+        var moodChar = modifiers[voiceIndex + 1];
+
+        // Build flags list
+        var flags = new List<string>();
+        if (DeponentVoices.Contains(voiceChar))
+            flags.Add("Deponent");
+
+        // Determine verbForm and mood based on moodChar
+        string verbForm;
+        string? mood;
+
+        if (moodChar == 'N')
+        {
+            verbForm = "Infinitive";
+            mood = null;
+        }
+        else if (moodChar == 'P')
+        {
+            verbForm = "Participle";
+            mood = null;
+        }
+        else
+        {
+            verbForm = "Finite";
+            mood = FiniteMoodMap.GetValueOrDefault(moodChar);
+        }
 
         result = new MorphologyInfo
         {
             Pos = "Verb",
             Tense = tense,
             Voice = voice,
-            Mood = mood
+            VerbForm = verbForm,
+            Mood = mood,
+            Flags = flags
         };
 
-        // Check mood type to determine remaining parsing
-        var moodChar = modifiers[voiceIndex + 1];
-
+        // Parse additional modifiers based on verb form
         if (moodChar == 'N') // Infinitive - no more components
         {
             return true;
@@ -271,7 +301,6 @@ public sealed class RmacParser : IRmacParser
 
     /// <summary>
     /// Parses participle modifiers (Case-Number-Gender)
-    /// Cyclomatic Complexity: 1
     /// </summary>
     private static MorphologyInfo ParseParticipleModifiers(MorphologyInfo info, string cng)
     {
@@ -285,7 +314,6 @@ public sealed class RmacParser : IRmacParser
 
     /// <summary>
     /// Parses finite verb modifiers (Person-Number)
-    /// Cyclomatic Complexity: 1
     /// </summary>
     private static MorphologyInfo ParseFiniteVerbModifiers(MorphologyInfo info, string pn)
     {
@@ -297,8 +325,71 @@ public sealed class RmacParser : IRmacParser
     }
 
     /// <summary>
-    /// Parses nominal types (Noun, Adjective, Article, Pronouns)
-    /// Cyclomatic Complexity: 4
+    /// Parses personal pronouns (P-1NS, P-2GS, P-3APM)
+    /// Format: P-{Person}{Case}{Number} or P-{Case}{Number}{Gender} for 3rd person
+    /// </summary>
+    private static bool TryParsePersonalPronoun(string code, out MorphologyInfo? result)
+    {
+        result = null;
+        var parts = code.Split('-');
+
+        if (parts.Length < 2)
+            return false;
+
+        var modifiers = parts[1];
+        if (modifiers.Length < 2)
+            return false;
+
+        string? person = null;
+        string? grammaticalCase = null;
+        string? number = null;
+        string? gender = null;
+        var flags = new List<string>();
+
+        // Check if first char is person (1, 2, 3)
+        if (PersonMap.ContainsKey(modifiers[0]))
+        {
+            // Format: P-{Person}{Case}{Number} (1st/2nd person)
+            person = PersonMap.GetValueOrDefault(modifiers[0]);
+            if (modifiers.Length > 1)
+                grammaticalCase = CaseMap.GetValueOrDefault(modifiers[1]);
+            if (modifiers.Length > 2)
+                number = NumberMap.GetValueOrDefault(modifiers[2]);
+        }
+        else
+        {
+            // Format: P-{Case}{Number}{Gender} (3rd person implied)
+            person = "Third";
+            grammaticalCase = CaseMap.GetValueOrDefault(modifiers[0]);
+            if (modifiers.Length > 1)
+                number = NumberMap.GetValueOrDefault(modifiers[1]);
+            if (modifiers.Length > 2)
+                gender = GenderMap.GetValueOrDefault(modifiers[2]);
+        }
+
+        // Check for suffix flags
+        if (parts.Length >= 3)
+        {
+            var flag = FlagMap.GetValueOrDefault(parts[2]);
+            if (flag != null)
+                flags.Add(flag);
+        }
+
+        result = new MorphologyInfo
+        {
+            Pos = "PersonalPronoun",
+            Person = person,
+            Case = grammaticalCase,
+            Number = number,
+            Gender = gender,
+            Flags = flags
+        };
+
+        return true;
+    }
+
+    /// <summary>
+    /// Parses nominal types (Noun, Adjective, Article, other Pronouns)
     /// </summary>
     private static bool TryParseNominal(string code, out MorphologyInfo? result)
     {
@@ -314,21 +405,37 @@ public sealed class RmacParser : IRmacParser
         if (pos is null)
             return false;
 
-        var cng = parts[1];
+        var modifiers = parts[1];
+        var flags = new List<string>();
+
+        // Parse case/number/gender
+        string? grammaticalCase = null;
+        string? number = null;
+        string? gender = null;
+
+        if (modifiers.Length > 0)
+            grammaticalCase = CaseMap.GetValueOrDefault(modifiers[0]);
+        if (modifiers.Length > 1)
+            number = NumberMap.GetValueOrDefault(modifiers[1]);
+        if (modifiers.Length > 2)
+            gender = GenderMap.GetValueOrDefault(modifiers[2]);
+
+        // Check for suffix flags (e.g., -P for ProperName, -T for Title)
+        if (parts.Length >= 3)
+        {
+            var flag = FlagMap.GetValueOrDefault(parts[2]);
+            if (flag != null)
+                flags.Add(flag);
+        }
 
         result = new MorphologyInfo
         {
             Pos = pos,
-            Case = cng.Length > 0 ? CaseMap.GetValueOrDefault(cng[0]) : null,
-            Number = cng.Length > 1 ? NumberMap.GetValueOrDefault(cng[1]) : null,
-            Gender = cng.Length > 2 ? GenderMap.GetValueOrDefault(cng[2]) : null
+            Case = grammaticalCase,
+            Number = number,
+            Gender = gender,
+            Flags = flags
         };
-
-        // Check for suffix (e.g., -P for Person, -T for Title)
-        if (parts.Length >= 3)
-        {
-            result = result with { Suffix = SuffixMap.GetValueOrDefault(parts[2]) };
-        }
 
         return true;
     }
