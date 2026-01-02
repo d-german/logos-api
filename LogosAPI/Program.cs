@@ -13,6 +13,9 @@ builder.Services.AddSingleton<IVerseReferenceNormalizer, VerseReferenceNormalize
 // Register StrongsNumberNormalizer as Singleton - stateless, thread-safe
 builder.Services.AddSingleton<IStrongsNumberNormalizer, StrongsNumberNormalizer>();
 
+// Register RmacParser as Singleton - stateless, thread-safe
+builder.Services.AddSingleton<IRmacParser, RmacParser>();
+
 // Register VerseLookupService as Singleton - orchestrates lookup operations
 builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 

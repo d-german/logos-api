@@ -10,15 +10,18 @@ public sealed class VerseLookupService : IVerseLookupService
 {
     private readonly IBibleDataService _bibleDataService;
     private readonly IVerseReferenceNormalizer _normalizer;
+    private readonly IRmacParser _rmacParser;
     private readonly ILogger<VerseLookupService> _logger;
 
     public VerseLookupService(
         IBibleDataService bibleDataService,
         IVerseReferenceNormalizer normalizer,
+        IRmacParser rmacParser,
         ILogger<VerseLookupService> logger)
     {
         _bibleDataService = bibleDataService ?? throw new ArgumentNullException(nameof(bibleDataService));
         _normalizer = normalizer ?? throw new ArgumentNullException(nameof(normalizer));
+        _rmacParser = rmacParser ?? throw new ArgumentNullException(nameof(rmacParser));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -107,7 +110,7 @@ public sealed class VerseLookupService : IVerseLookupService
     /// Maps all tokens to response format
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private static IReadOnlyList<TokenResponse> EnrichTokens(List<TokenData> tokens)
+    private IReadOnlyList<TokenResponse> EnrichTokens(List<TokenData> tokens)
     {
         return tokens.Select(MapToTokenResponse).ToList();
     }
@@ -116,15 +119,18 @@ public sealed class VerseLookupService : IVerseLookupService
     /// Maps a single token to response format
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private static TokenResponse MapToTokenResponse(TokenData token)
+    private TokenResponse MapToTokenResponse(TokenData token)
     {
+        var morph = _rmacParser.Parse(token.Rmac);
+        
         return new TokenResponse(
             token.Gloss,
             token.Greek,
             token.Translit,
             token.Strongs,
             token.Rmac,
-            token.RmacDesc
+            token.RmacDesc,
+            morph
         );
     }
 

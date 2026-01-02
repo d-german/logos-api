@@ -3,7 +3,7 @@
   "info": {
     "title": "Logos Bible API",
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data and lexicon definitions.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -50,11 +50,65 @@
   },
   "components": {
     "schemas": {
-      "VerseLookupResult": {"type": "object", "properties": {"verses": {"type": "array", "items": {"$ref": "#/components/schemas/VerseResponse"}}, "notFound": {"type": "array", "items": {"type": "string"}}}, "required": ["verses", "notFound"]},
-      "VerseResponse": {"type": "object", "properties": {"reference": {"type": "string"}, "tokens": {"type": "array", "items": {"$ref": "#/components/schemas/TokenResponse"}}}, "required": ["reference", "tokens"]},
-      "TokenResponse": {"type": "object", "properties": {"gloss": {"type": "string"}, "greek": {"type": "string"}, "translit": {"type": "string"}, "strongs": {"type": "string"}, "rmac": {"type": "string"}, "rmacDesc": {"type": ["string", "null"]}}, "required": ["gloss", "greek", "translit", "strongs", "rmac"]},
-      "LexiconLookupResponse": {"type": "object", "properties": {"strongsNumber": {"type": "string"}, "definition": {"type": "string"}}, "required": ["strongsNumber", "definition"]},
-      "ErrorResponse": {"type": "object", "properties": {"error": {"type": "string"}}, "required": ["error"]}
+      "VerseLookupResult": {
+        "type": "object",
+        "properties": {
+          "verses": {"type": "array", "items": {"$ref": "#/components/schemas/VerseResponse"}},
+          "notFound": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["verses", "notFound"]
+      },
+      "VerseResponse": {
+        "type": "object",
+        "properties": {
+          "reference": {"type": "string"},
+          "tokens": {"type": "array", "items": {"$ref": "#/components/schemas/TokenResponse"}}
+        },
+        "required": ["reference", "tokens"]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "gloss": {"type": "string", "description": "English translation/meaning"},
+          "greek": {"type": "string", "description": "Original Greek text"},
+          "translit": {"type": "string", "description": "Transliteration"},
+          "strongs": {"type": "string", "description": "Strong's number (e.g., G976)"},
+          "rmac": {"type": "string", "description": "Robinson's Morphological Analysis Code"},
+          "rmacDesc": {"type": ["string", "null"], "description": "Human-readable morphology description"},
+          "morph": {"$ref": "#/components/schemas/MorphologyInfo"}
+        },
+        "required": ["gloss", "greek", "translit", "strongs", "rmac"]
+      },
+      "MorphologyInfo": {
+        "type": "object",
+        "description": "Parsed morphological components from RMAC code",
+        "properties": {
+          "pos": {"type": ["string", "null"], "description": "Part of speech (Verb, Noun, Adjective, etc.)"},
+          "tense": {"type": ["string", "null"], "description": "Verb tense (Present, Aorist, Perfect, etc.)"},
+          "voice": {"type": ["string", "null"], "description": "Verb voice (Active, Middle, Passive)"},
+          "mood": {"type": ["string", "null"], "description": "Verb mood (Indicative, Subjunctive, Participle, etc.)"},
+          "case": {"type": ["string", "null"], "description": "Grammatical case (Nominative, Genitive, etc.)"},
+          "number": {"type": ["string", "null"], "description": "Number (Singular, Plural)"},
+          "gender": {"type": ["string", "null"], "description": "Gender (Masculine, Feminine, Neuter)"},
+          "person": {"type": ["string", "null"], "description": "Person (First, Second, Third)"},
+          "suffix": {"type": ["string", "null"], "description": "Descriptor suffix (Person, Title, etc.)"}
+        }
+      },
+      "LexiconLookupResponse": {
+        "type": "object",
+        "properties": {
+          "strongsNumber": {"type": "string"},
+          "definition": {"type": "string"}
+        },
+        "required": ["strongsNumber", "definition"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {"type": "string"}
+        },
+        "required": ["error"]
+      }
     }
   }
 }

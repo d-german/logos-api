@@ -13,6 +13,7 @@ public sealed class VerseLookupServiceTests
 {
     private readonly Mock<IBibleDataService> _mockBibleDataService;
     private readonly Mock<IVerseReferenceNormalizer> _mockNormalizer;
+    private readonly Mock<IRmacParser> _mockRmacParser;
     private readonly Mock<ILogger<VerseLookupService>> _mockLogger;
     private readonly VerseLookupService _service;
 
@@ -20,6 +21,7 @@ public sealed class VerseLookupServiceTests
     {
         _mockBibleDataService = new Mock<IBibleDataService>();
         _mockNormalizer = new Mock<IVerseReferenceNormalizer>();
+        _mockRmacParser = new Mock<IRmacParser>();
         _mockLogger = new Mock<ILogger<VerseLookupService>>();
 
         // Setup default empty dictionaries
@@ -27,10 +29,15 @@ public sealed class VerseLookupServiceTests
             .Returns(new ConcurrentDictionary<string, VerseData>());
         _mockBibleDataService.Setup(x => x.Lexicon)
             .Returns(new ConcurrentDictionary<string, string>());
+        
+        // Setup default RMAC parser behavior
+        _mockRmacParser.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns((string code) => code != null ? new MorphologyInfo { Pos = "Noun" } : null);
 
         _service = new VerseLookupService(
             _mockBibleDataService.Object,
             _mockNormalizer.Object,
+            _mockRmacParser.Object,
             _mockLogger.Object);
     }
 
