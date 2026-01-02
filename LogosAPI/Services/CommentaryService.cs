@@ -178,6 +178,69 @@ public sealed class CommentaryService : ICommentaryService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    /// <inheritdoc />
+    public async Task<AllCommentariesLookupResponse> GetAllCommentariesAsync(
+        IReadOnlyList<(string Book, int Chapter, int Verse, string OriginalRef)> parsedReferences,
+        CancellationToken cancellationToken = default)
+    {
+        // Get available commentaries first
+        var availableCommentaries = await GetAvailableCommentariesAsync(cancellationToken);
+        var commentaryIds = availableCommentaries.Commentaries.Select(c => c.Id).ToList();
+
+        var results = new List<CommentaryResult>();
+        var allNotFound = new List<string>();
+        var references = parsedReferences.Select(r => r.OriginalRef).ToList();
+
+        // Process each commentary in parallel
+        var tasks = commentaryIds.Select(async commentaryId =>
+        {
+            var entries = new List<VerseCommentaryEntry>();
+
+            foreach (var (book, chapter, verse, originalRef) in parsedReferences)
+            {
+                var commentary = await GetCommentaryAsync(commentaryId, book, chapter, verse, cancellationToken);
+                
+                if (commentary?.Verses.Count > 0)
+                {
+                    var verseContent = commentary.Verses.FirstOrDefault(v => v.VerseNumber == verse);
+                    entries.Add(new VerseCommentaryEntry(
+                        originalRef,
+                        verse,
+                        verseContent?.Content
+                    ));
+                }
+                else
+                {
+                    entries.Add(new VerseCommentaryEntry(originalRef, verse, null));
+                }
+            }
+
+            var commentaryInfo = availableCommentaries.Commentaries.FirstOrDefault(c => c.Id == commentaryId);
+            return new CommentaryResult(
+                commentaryId,
+                commentaryInfo?.Name ?? commentaryId,
+                entries
+            );
+        });
+
+        var commentaryResults = await Task.WhenAll(tasks);
+        results.AddRange(commentaryResults);
+
+        // Determine not found (references that have no commentary in ANY source)
+        foreach (var (_, _, verse, originalRef) in parsedReferences)
+        {
+            var hasAnyCommentary = results.Any(r => 
+                r.Entries.Any(e => e.Reference == originalRef && !string.IsNullOrEmpty(e.Content)));
+            
+            if (!hasAnyCommentary)
+            {
+                allNotFound.Add(originalRef);
+            }
+        }
+
+        return new AllCommentariesLookupResponse(references, results, allNotFound);
+    }
+
     #region HelloAO API DTOs
 
     private sealed record HelloAoCommentariesResponse(

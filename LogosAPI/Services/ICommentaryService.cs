@@ -26,4 +26,13 @@ public interface ICommentaryService
         int chapter, 
         int? verse = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets commentary from ALL available commentaries for multiple verses
+    /// </summary>
+    /// <param name="parsedReferences">List of parsed references (book, chapter, verse tuples)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task<AllCommentariesLookupResponse> GetAllCommentariesAsync(
+        IReadOnlyList<(string Book, int Chapter, int Verse, string OriginalRef)> parsedReferences,
+        CancellationToken cancellationToken = default);
 }

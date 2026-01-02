@@ -88,6 +88,63 @@ public sealed class CommentaryController : ControllerBase
     }
 
     /// <summary>
+    /// Gets commentary from ALL available sources for one or more verses
+    /// </summary>
+    /// <param name="verseReferences">One or more verse references (e.g., "John.1.3", "Rom.8.28")</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Commentary from all sources for the specified verses</returns>
+    [HttpGet("all")]
+    [ProducesResponseType(typeof(AllCommentariesLookupResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AllCommentariesLookupResponse>> GetAllCommentaries(
+        [FromQuery] string[] verseReferences,
+        CancellationToken cancellationToken)
+    {
+        if (verseReferences is null || verseReferences.Length == 0)
+        {
+            return BadRequest(new { error = "At least one verse reference is required" });
+        }
+
+        var parsedReferences = new List<(string Book, int Chapter, int Verse, string OriginalRef)>();
+        var invalidReferences = new List<string>();
+
+        foreach (var reference in verseReferences)
+        {
+            if (!_normalizer.TryNormalize(reference, out var normalizedRef))
+            {
+                invalidReferences.Add(reference);
+                continue;
+            }
+
+            var parts = normalizedRef!.Split('.');
+            if (parts.Length < 3)
+            {
+                invalidReferences.Add(reference);
+                continue;
+            }
+
+            var book = ConvertToHelloAoBookId(parts[0]);
+            var chapter = int.Parse(parts[1]);
+            var verse = int.Parse(parts[2]);
+
+            parsedReferences.Add((book, chapter, verse, normalizedRef));
+        }
+
+        if (invalidReferences.Count > 0)
+        {
+            _logger.LogWarning("Invalid verse references: {References}", string.Join(", ", invalidReferences));
+        }
+
+        if (parsedReferences.Count == 0)
+        {
+            return BadRequest(new { error = $"No valid verse references provided. Invalid: {string.Join(", ", invalidReferences)}" });
+        }
+
+        var result = await _commentaryService.GetAllCommentariesAsync(parsedReferences, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Converts internal book ID to HelloAO format
     /// </summary>
     private static string ConvertToHelloAoBookId(string internalBookId)

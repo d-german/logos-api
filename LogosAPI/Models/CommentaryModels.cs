@@ -40,3 +40,31 @@ public sealed record VerseCommentary(
     int VerseNumber,
     string Content
 );
+
+
+/// <summary>
+/// Response for multi-commentary lookup across all sources
+/// </summary>
+public sealed record AllCommentariesLookupResponse(
+    IReadOnlyList<string> References,
+    IReadOnlyList<CommentaryResult> Commentaries,
+    IReadOnlyList<string> NotFound
+);
+
+/// <summary>
+/// Commentary results from a single source for multiple verses
+/// </summary>
+public sealed record CommentaryResult(
+    string CommentaryId,
+    string CommentaryName,
+    IReadOnlyList<VerseCommentaryEntry> Entries
+);
+
+/// <summary>
+/// Commentary entry for a specific verse from a specific commentary
+/// </summary>
+public sealed record VerseCommentaryEntry(
+    string Reference,
+    int VerseNumber,
+    string? Content
+);

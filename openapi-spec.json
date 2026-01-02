@@ -3,7 +3,7 @@
   "info": {
     "title": "Logos Bible API",
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -63,10 +63,28 @@
         }
       }
     },
+    "/api/commentary/all": {
+      "get": {
+        "operationId": "getAllCommentaries",
+        "summary": "Get commentary from ALL sources for multiple verses",
+        "description": "Retrieves commentary from all 6 available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call.",
+        "parameters": [{
+          "name": "verseReferences",
+          "in": "query",
+          "required": true,
+          "description": "One or more verse references",
+          "schema": {"type": "array", "items": {"type": "string"}, "example": ["John.1.3", "Rom.8.28"]}
+        }],
+        "responses": {
+          "200": {"description": "Commentary from all sources", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AllCommentariesLookupResponse"}}}},
+          "400": {"description": "Invalid reference format", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
     "/api/commentary/{commentaryId}/{reference}": {
       "get": {
         "operationId": "getCommentary",
-        "summary": "Get commentary for a verse",
+        "summary": "Get commentary for a verse from a specific source",
         "description": "Retrieves commentary for a specific verse from the specified commentary source.",
         "parameters": [
           {
@@ -186,6 +204,42 @@
           "notFound": {"type": "array", "items": {"type": "string"}}
         },
         "required": ["reference", "commentaryId", "commentaryName", "verses", "notFound"]
+      },
+      "AllCommentariesLookupResponse": {
+        "type": "object",
+        "description": "Commentary from all available sources for multiple verses",
+        "properties": {
+          "references": {"type": "array", "items": {"type": "string"}, "description": "The requested verse references"},
+          "commentaries": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/CommentaryResult"},
+            "description": "Commentary from each source"
+          },
+          "notFound": {"type": "array", "items": {"type": "string"}, "description": "References with no commentary in any source"}
+        },
+        "required": ["references", "commentaries", "notFound"]
+      },
+      "CommentaryResult": {
+        "type": "object",
+        "description": "Commentary results from a single source",
+        "properties": {
+          "commentaryId": {"type": "string"},
+          "commentaryName": {"type": "string"},
+          "entries": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/VerseCommentaryEntry"}
+          }
+        },
+        "required": ["commentaryId", "commentaryName", "entries"]
+      },
+      "VerseCommentaryEntry": {
+        "type": "object",
+        "properties": {
+          "reference": {"type": "string"},
+          "verseNumber": {"type": "integer"},
+          "content": {"type": ["string", "null"], "description": "Commentary text, null if not available"}
+        },
+        "required": ["reference", "verseNumber"]
       },
       "VerseCommentary": {
         "type": "object",
