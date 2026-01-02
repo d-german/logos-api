@@ -1,0 +1,60 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Logos Bible API",
+    "description": "API for looking up Bible verses with Greek/Hebrew linguistic data and lexicon definitions.",
+    "version": "1.1.0"
+  },
+  "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
+  "paths": {
+    "/api/verses/lookup": {
+      "get": {
+        "operationId": "lookupVerses",
+        "summary": "Look up Bible verses with linguistic data",
+        "parameters": [{
+          "name": "verseReferences",
+          "in": "query",
+          "required": true,
+          "schema": {"type": "array", "items": {"type": "string"}, "example": ["Matt.1.1", "John.3.16"]}
+        }],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/VerseLookupResult"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lexicon/{strongsNumber}": {
+      "get": {
+        "operationId": "getLexiconEntry",
+        "summary": "Look up a lexicon entry",
+        "parameters": [{
+          "name": "strongsNumber",
+          "in": "path",
+          "required": true,
+          "schema": {"type": "string", "example": "G25"}
+        }],
+        "responses": {
+          "200": {"description": "Success", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LexiconLookupResponse"}}}},
+          "400": {"description": "Invalid format", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "404": {"description": "Not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
+    "/health": {"get": {"operationId": "healthCheck", "responses": {"200": {"description": "Healthy", "content": {"text/plain": {"schema": {"type": "string"}}}}}}}
+  },
+  "components": {
+    "schemas": {
+      "VerseLookupResult": {"type": "object", "properties": {"verses": {"type": "array", "items": {"$ref": "#/components/schemas/VerseResponse"}}, "notFound": {"type": "array", "items": {"type": "string"}}}, "required": ["verses", "notFound"]},
+      "VerseResponse": {"type": "object", "properties": {"reference": {"type": "string"}, "tokens": {"type": "array", "items": {"$ref": "#/components/schemas/TokenResponse"}}}, "required": ["reference", "tokens"]},
+      "TokenResponse": {"type": "object", "properties": {"gloss": {"type": "string"}, "greek": {"type": "string"}, "translit": {"type": "string"}, "strongs": {"type": "string"}, "rmac": {"type": "string"}, "rmacDesc": {"type": ["string", "null"]}}, "required": ["gloss", "greek", "translit", "strongs", "rmac"]},
+      "LexiconLookupResponse": {"type": "object", "properties": {"strongsNumber": {"type": "string"}, "definition": {"type": "string"}}, "required": ["strongsNumber", "definition"]},
+      "ErrorResponse": {"type": "object", "properties": {"error": {"type": "string"}}, "required": ["error"]}
+    }
+  }
+}

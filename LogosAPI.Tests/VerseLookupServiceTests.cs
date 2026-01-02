@@ -59,7 +59,7 @@ public sealed class VerseLookupServiceTests
         Assert.Empty(result.NotFound);
         Assert.Equal(reference, result.Verses[0].Reference);
         Assert.Single(result.Verses[0].Tokens);
-        Assert.Equal("A book, a written document", result.Verses[0].Tokens[0].LexiconEntry);
+        // LexiconEntry no longer included in TokenResponse - use separate lexicon endpoint
     }
 
     [Fact]
@@ -139,37 +139,24 @@ public sealed class VerseLookupServiceTests
 
     #endregion
 
-    #region Lexicon Enrichment Tests
+    #region Token Mapping Tests
 
     [Fact]
-    public void LookupVerses_UnknownStrongs_LexiconEntryIsNull()
+    public void LookupVerses_TokenData_MappedToTokenResponse()
     {
         // Arrange
         SetupNormalizer("Matt 1:1", "Matt.1.1");
-        SetupVerse("Matt.1.1", CreateVerseData("word", "G99999"));
-        // Don't add lexicon entry for G99999
+        SetupVerse("Matt.1.1", CreateVerseData("word", "G976"));
 
         // Act
         var result = _service.LookupVerses(new[] { "Matt 1:1" });
 
         // Assert
         Assert.Single(result.Verses);
-        Assert.Null(result.Verses[0].Tokens[0].LexiconEntry);
-    }
-
-    [Fact]
-    public void LookupVerses_KnownStrongs_LexiconEntryPopulated()
-    {
-        // Arrange
-        SetupNormalizer("Matt 1:1", "Matt.1.1");
-        SetupVerse("Matt.1.1", CreateVerseData("word", "G976"));
-        SetupLexicon("G976", "Test definition");
-
-        // Act
-        var result = _service.LookupVerses(new[] { "Matt 1:1" });
-
-        // Assert
-        Assert.Equal("Test definition", result.Verses[0].Tokens[0].LexiconEntry);
+        var token = result.Verses[0].Tokens[0];
+        Assert.Equal("word", token.Gloss);
+        Assert.Equal("G976", token.Strongs);
+        // Note: LexiconEntry no longer included in TokenResponse - use separate lexicon endpoint
     }
 
     #endregion
@@ -188,7 +175,7 @@ public sealed class VerseLookupServiceTests
     }
 
     [Fact]
-    public void LookupVerses_MultipleTokensInVerse_AllEnrichedWithLexicon()
+    public void LookupVerses_MultipleTokensInVerse_AllMappedCorrectly()
     {
         // Arrange
         var tokens = new List<TokenData>
@@ -201,18 +188,16 @@ public sealed class VerseLookupServiceTests
 
         SetupNormalizer("Matt 1:1", "Matt.1.1");
         SetupVerse("Matt.1.1", verseData);
-        SetupLexicon("G1", "Definition 1");
-        SetupLexicon("G2", "Definition 2");
-        // G3 not in lexicon - should be null
 
         // Act
         var result = _service.LookupVerses(new[] { "Matt 1:1" });
 
         // Assert
         Assert.Equal(3, result.Verses[0].Tokens.Count);
-        Assert.Equal("Definition 1", result.Verses[0].Tokens[0].LexiconEntry);
-        Assert.Equal("Definition 2", result.Verses[0].Tokens[1].LexiconEntry);
-        Assert.Null(result.Verses[0].Tokens[2].LexiconEntry);
+        Assert.Equal("word1", result.Verses[0].Tokens[0].Gloss);
+        Assert.Equal("word2", result.Verses[0].Tokens[1].Gloss);
+        Assert.Equal("word3", result.Verses[0].Tokens[2].Gloss);
+        // Note: LexiconEntry no longer included in TokenResponse - use separate lexicon endpoint
     }
 
     #endregion
@@ -222,7 +207,9 @@ public sealed class VerseLookupServiceTests
     private void SetupNormalizer(string input, string output)
     {
         _mockNormalizer
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type
             .Setup(x => x.TryNormalize(input, out output))
+#pragma warning restore CS8600
             .Returns(true);
     }
 
@@ -230,7 +217,9 @@ public sealed class VerseLookupServiceTests
     {
         string? output = null;
         _mockNormalizer
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type
             .Setup(x => x.TryNormalize(input, out output))
+#pragma warning restore CS8600
             .Returns(false);
     }
 

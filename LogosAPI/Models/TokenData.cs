@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace LogosAPI.Models;
 
 /// <summary>
@@ -14,5 +16,6 @@ public sealed class TokenData
     /// <summary>
     /// Robinson's Morphological Analysis Code description (may be null if not in JSON)
     /// </summary>
+    [JsonPropertyName("rmac_desc")]
     public string? RmacDesc { get; init; }
 }

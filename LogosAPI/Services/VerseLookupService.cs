@@ -104,41 +104,28 @@ public sealed class VerseLookupService : IVerseLookupService
     }
 
     /// <summary>
-    /// Enriches all tokens with lexicon entries
-    /// Cyclomatic Complexity: 2
+    /// Maps all tokens to response format
+    /// Cyclomatic Complexity: 1
     /// </summary>
-    private IReadOnlyList<TokenResponse> EnrichTokens(List<TokenData> tokens)
+    private static IReadOnlyList<TokenResponse> EnrichTokens(List<TokenData> tokens)
     {
-        return tokens.Select(EnrichSingleToken).ToList();
+        return tokens.Select(MapToTokenResponse).ToList();
     }
 
     /// <summary>
-    /// Enriches a single token with its lexicon entry
+    /// Maps a single token to response format
     /// Cyclomatic Complexity: 1
     /// </summary>
-    private TokenResponse EnrichSingleToken(TokenData token)
+    private static TokenResponse MapToTokenResponse(TokenData token)
     {
-        var lexiconEntry = LookupLexicon(token.Strongs);
-
         return new TokenResponse(
             token.Gloss,
             token.Greek,
             token.Translit,
             token.Strongs,
             token.Rmac,
-            token.RmacDesc,
-            lexiconEntry
+            token.RmacDesc
         );
-    }
-
-    /// <summary>
-    /// Looks up lexicon entry for a Strong's number
-    /// Cyclomatic Complexity: 2
-    /// </summary>
-    private string? LookupLexicon(string strongsNumber)
-    {
-        _bibleDataService.Lexicon.TryGetValue(strongsNumber, out var entry);
-        return entry;
     }
 
     /// <summary>
