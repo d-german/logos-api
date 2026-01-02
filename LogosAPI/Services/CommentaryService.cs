@@ -57,7 +57,7 @@ public sealed class CommentaryService : ICommentaryService
         var normalizedBook = book.ToUpperInvariant();
         var url = $"{BaseUrl}/c/{commentaryId}/{normalizedBook}/{chapter}.json";
         
-        _logger.LogInformation("Fetching commentary from {Url}", url);
+        _logger.LogDebug("Fetching commentary from {Url}", url);
 
         try
         {
@@ -65,11 +65,19 @@ public sealed class CommentaryService : ICommentaryService
             
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Commentary not found: {StatusCode} for {Url}", response.StatusCode, url);
+                _logger.LogDebug("Commentary not found: {StatusCode} for {Url}", response.StatusCode, url);
                 return null;
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            
+            // Check if response is actually JSON (HelloAO sometimes returns HTML error pages)
+            if (string.IsNullOrWhiteSpace(json) || !json.TrimStart().StartsWith('{'))
+            {
+                _logger.LogDebug("Non-JSON response received from {Url}", url);
+                return null;
+            }
+
             var chapterResponse = JsonSerializer.Deserialize<HelloAoChapterResponse>(json, _jsonOptions);
 
             if (chapterResponse is null)
@@ -94,7 +102,12 @@ public sealed class CommentaryService : ICommentaryService
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Failed to fetch commentary from {Url}", url);
+            _logger.LogDebug(ex, "HTTP error fetching commentary from {Url}", url);
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogDebug(ex, "JSON parsing error for commentary from {Url}", url);
             return null;
         }
     }
