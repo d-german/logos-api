@@ -216,15 +216,15 @@ public sealed class CommentaryService : ICommentaryService
                 if (commentary?.Verses.Count > 0)
                 {
                     var verseContent = commentary.Verses.FirstOrDefault(v => v.VerseNumber == verse);
-                    entries.Add(new VerseCommentaryEntry(
-                        originalRef,
-                        verse,
-                        verseContent?.Content
-                    ));
-                }
-                else
-                {
-                    entries.Add(new VerseCommentaryEntry(originalRef, verse, null));
+                    // Only add entries that have actual content
+                    if (!string.IsNullOrEmpty(verseContent?.Content))
+                    {
+                        entries.Add(new VerseCommentaryEntry(
+                            originalRef,
+                            verse,
+                            verseContent.Content
+                        ));
+                    }
                 }
             }
 
@@ -237,7 +237,9 @@ public sealed class CommentaryService : ICommentaryService
         });
 
         var commentaryResults = await Task.WhenAll(tasks);
-        results.AddRange(commentaryResults);
+        
+        // Only include commentaries that have at least one entry with content
+        results.AddRange(commentaryResults.Where(r => r.Entries.Count > 0));
 
         // Determine not found (references that have no commentary in ANY source)
         foreach (var (_, _, verse, originalRef) in parsedReferences)
