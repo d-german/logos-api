@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Logos Bible API",
-    "description": "API for looking up Bible verses with Greek/Hebrew linguistic data and lexicon definitions.",
-    "version": "1.3.0"
+    "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
+    "version": "1.4.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -46,6 +46,51 @@
         }
       }
     },
+    "/api/commentary/available": {
+      "get": {
+        "operationId": "getAvailableCommentaries",
+        "summary": "List available Bible commentaries",
+        "description": "Returns a list of available commentaries including Adam Clarke, Jamieson-Fausset-Brown, John Gill, Keil-Delitzsch, Matthew Henry, and Tyndale Open Study Notes.",
+        "responses": {
+          "200": {
+            "description": "List of available commentaries",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/AvailableCommentariesResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commentary/{commentaryId}/{reference}": {
+      "get": {
+        "operationId": "getCommentary",
+        "summary": "Get commentary for a verse",
+        "description": "Retrieves commentary for a specific verse from the specified commentary source.",
+        "parameters": [
+          {
+            "name": "commentaryId",
+            "in": "path",
+            "required": true,
+            "description": "Commentary ID: tyndale, john-gill, matthew-henry, adam-clarke, jamieson-fausset-brown, keil-delitzsch",
+            "schema": {"type": "string", "example": "tyndale"}
+          },
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "description": "Verse reference (e.g., John.1.3, Jn 1:3, Gen.1.1)",
+            "schema": {"type": "string", "example": "John.1.3"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Commentary found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CommentaryLookupResponse"}}}},
+          "400": {"description": "Invalid reference format", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "404": {"description": "Commentary not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
     "/health": {"get": {"operationId": "healthCheck", "responses": {"200": {"description": "Healthy", "content": {"text/plain": {"schema": {"type": "string"}}}}}}}
   },
   "components": {
@@ -81,18 +126,18 @@
       },
       "MorphologyInfo": {
         "type": "object",
-        "description": "Parsed morphological components from RMAC code. All fields populated when applicable, null otherwise.",
+        "description": "Parsed morphological components from RMAC code.",
         "properties": {
-          "pos": {"type": ["string", "null"], "description": "Part of speech: Verb, Noun, Adjective, Article, PersonalPronoun, etc."},
-          "tense": {"type": ["string", "null"], "description": "Verb tense: Present, Imperfect, Future, Aorist, Perfect, Pluperfect, SecondAorist, etc."},
-          "voice": {"type": ["string", "null"], "description": "Verb voice: Active, Middle, Passive, MiddleOrPassive, Deponent, etc."},
+          "pos": {"type": ["string", "null"], "description": "Part of speech"},
+          "tense": {"type": ["string", "null"], "description": "Verb tense"},
+          "voice": {"type": ["string", "null"], "description": "Verb voice"},
           "verbForm": {"type": ["string", "null"], "description": "Verb form: Finite, Participle, or Infinitive"},
-          "mood": {"type": ["string", "null"], "description": "Finite verb mood only: Indicative, Subjunctive, Imperative, Optative (null for participles/infinitives)"},
-          "case": {"type": ["string", "null"], "description": "Grammatical case: Nominative, Genitive, Dative, Accusative, Vocative"},
+          "mood": {"type": ["string", "null"], "description": "Finite verb mood only"},
+          "case": {"type": ["string", "null"], "description": "Grammatical case"},
           "number": {"type": ["string", "null"], "description": "Number: Singular, Plural"},
           "gender": {"type": ["string", "null"], "description": "Gender: Masculine, Feminine, Neuter"},
           "person": {"type": ["string", "null"], "description": "Person: First, Second, Third"},
-          "flags": {"type": "array", "items": {"type": "string"}, "description": "Additional flags: ProperName, Title, Comparative, Superlative, Deponent, Location, etc."}
+          "flags": {"type": "array", "items": {"type": "string"}, "description": "Additional flags"}
         }
       },
       "LexiconLookupResponse": {
@@ -102,6 +147,53 @@
           "definition": {"type": "string"}
         },
         "required": ["strongsNumber", "definition"]
+      },
+      "AvailableCommentariesResponse": {
+        "type": "object",
+        "properties": {
+          "commentaries": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/CommentaryInfo"}
+          }
+        },
+        "required": ["commentaries"]
+      },
+      "CommentaryInfo": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "description": "Commentary ID (e.g., tyndale, john-gill)"},
+          "name": {"type": "string", "description": "Full name of the commentary"},
+          "englishName": {"type": "string"},
+          "website": {"type": "string"},
+          "licenseUrl": {"type": "string"},
+          "licenseNotes": {"type": ["string", "null"]},
+          "numberOfBooks": {"type": "integer"},
+          "totalNumberOfChapters": {"type": "integer"},
+          "totalNumberOfVerses": {"type": "integer"}
+        },
+        "required": ["id", "name"]
+      },
+      "CommentaryLookupResponse": {
+        "type": "object",
+        "properties": {
+          "reference": {"type": "string", "description": "The verse reference"},
+          "commentaryId": {"type": "string", "description": "Commentary source ID"},
+          "commentaryName": {"type": "string", "description": "Commentary source name"},
+          "verses": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/VerseCommentary"}
+          },
+          "notFound": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["reference", "commentaryId", "commentaryName", "verses", "notFound"]
+      },
+      "VerseCommentary": {
+        "type": "object",
+        "properties": {
+          "verseNumber": {"type": "integer"},
+          "content": {"type": "string", "description": "Commentary text"}
+        },
+        "required": ["verseNumber", "content"]
       },
       "ErrorResponse": {
         "type": "object",

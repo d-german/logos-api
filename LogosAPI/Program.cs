@@ -19,6 +19,9 @@ builder.Services.AddSingleton<IRmacParser, RmacParser>();
 // Register VerseLookupService as Singleton - orchestrates lookup operations
 builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 
+// Register CommentaryService with HttpClient for external HelloAO API calls
+builder.Services.AddHttpClient<ICommentaryService, CommentaryService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
