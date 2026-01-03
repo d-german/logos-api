@@ -5,7 +5,7 @@
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
     "version": "1.6.0"
   },
-  "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
+  "servers": [{"url": "https://logos.d-german.net"}],
   "paths": {
     "/api/verses/lookup": {
       "get": {
@@ -121,7 +121,8 @@
           "strongs": {"type": "string", "description": "Strong's number (e.g., G976)"},
           "rmac": {"type": "string", "description": "Robinson's Morphological Analysis Code"},
           "rmacDesc": {"type": "string", "description": "Human-readable morphology description"},
-          "morph": {"$ref": "#/components/schemas/MorphologyInfo"}
+          "morph": {"$ref": "#/components/schemas/MorphologyInfo"},
+          "strongDef": {"type": "string", "description": "Strong's definition of the word"}
         },
         "required": ["gloss", "greek", "translit", "strongs", "rmac"]
       },

@@ -130,7 +130,8 @@ public sealed class VerseLookupService : IVerseLookupService
             token.Strongs,
             token.Rmac,
             token.RmacDesc,
-            morph
+            morph,
+            token.StrongDef
         );
     }
 

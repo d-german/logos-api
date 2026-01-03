@@ -10,6 +10,7 @@ namespace LogosAPI.Models;
 /// <param name="Rmac">Robinson's Morphological Analysis Code</param>
 /// <param name="RmacDesc">Human-readable morphology description</param>
 /// <param name="Morph">Parsed morphological components from the RMAC code</param>
+/// <param name="StrongDef">Strong's definition of the word</param>
 public sealed record TokenResponse(
     string Gloss,
     string Greek,
@@ -17,5 +18,6 @@ public sealed record TokenResponse(
     string Strongs,
     string Rmac,
     string? RmacDesc,
-    MorphologyInfo? Morph
+    MorphologyInfo? Morph,
+    string? StrongDef
 );

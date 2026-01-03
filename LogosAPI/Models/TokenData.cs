@@ -18,4 +18,10 @@ public sealed class TokenData
     /// </summary>
     [JsonPropertyName("rmac_desc")]
     public string? RmacDesc { get; init; }
+    
+    /// <summary>
+    /// Strong's definition of the word (may be null if not in JSON)
+    /// </summary>
+    [JsonPropertyName("strong_def")]
+    public string? StrongDef { get; init; }
 }
