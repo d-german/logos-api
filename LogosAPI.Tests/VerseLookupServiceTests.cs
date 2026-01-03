@@ -162,7 +162,7 @@ public sealed class VerseLookupServiceTests
         Assert.Single(result.Verses);
         var token = result.Verses[0].Tokens[0];
         Assert.Equal("word", token.Gloss);
-        Assert.Equal("G976", token.Strongs);
+        Assert.Equal("G976", token.Strongs.Number);
         // Note: LexiconEntry no longer included in TokenResponse - use separate lexicon endpoint
     }
 

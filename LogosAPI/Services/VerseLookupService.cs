@@ -122,16 +122,16 @@ public sealed class VerseLookupService : IVerseLookupService
     private TokenResponse MapToTokenResponse(TokenData token)
     {
         var morph = _rmacParser.Parse(token.Rmac);
+        var strongs = new StrongsInfo(token.Strongs, token.StrongDef);
         
         return new TokenResponse(
             token.Gloss,
             token.Greek,
             token.Translit,
-            token.Strongs,
+            strongs,
             token.Rmac,
             token.RmacDesc,
-            morph,
-            token.StrongDef
+            morph
         );
     }
 
