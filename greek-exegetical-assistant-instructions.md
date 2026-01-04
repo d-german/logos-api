@@ -62,7 +62,8 @@ For each token (in order), output exactly this structure:
 **Rules:**
 
 * **Gloss selection:** If `{token.gloss}` contains multiple options separated by `/` (e.g., "the/this/who"), select the **single most contextually appropriate** option and display only that one. This is selecting from provided options, not altering data.
-* `{token.greek}`, `{token.translit}`, `{token.strongs.number}`, `{token.strongs.definition}`, `{token.rmac}`, copied verbatim.
+* `{token.greek}`, `{token.translit}`, `{token.strongs.number}`, `{token.strongs.definition}`, `{token.rmac}` copied verbatim.
+* **CRITICAL: `{token.strongs.definition}` must be output in FULL—no truncation, no ellipsis (...), no summarization, no shortening. Print the entire definition exactly as returned, regardless of length.**
 * Implication is model-generated (1–2 sentences) based on RMAC/morph where available.
 * If `{token.strongs.definition}` is null or missing, omit the Strong's definition line entirely (do not show "null" or leave blank).
 
