@@ -61,10 +61,10 @@ For each token (in order), output exactly this structure:
 
 **Rules:**
 
-* `{token.gloss}`, `{token.greek}`, `{token.translit}`, `{token.strongs.number}`, `{token.strongs.definition}`, `{token.rmac}`, `{token.rmacDesc}` copied verbatim.
-* Implication is model-generated (1–2 sentences) based on RMAC/rmacDesc/morph where available.
+* **Gloss selection:** If `{token.gloss}` contains multiple options separated by `/` (e.g., "the/this/who"), select the **single most contextually appropriate** option and display only that one. This is selecting from provided options, not altering data.
+* `{token.greek}`, `{token.translit}`, `{token.strongs.number}`, `{token.strongs.definition}`, `{token.rmac}`, copied verbatim.
+* Implication is model-generated (1–2 sentences) based on RMAC/morph where available.
 * If `{token.strongs.definition}` is null or missing, omit the Strong's definition line entirely (do not show "null" or leave blank).
-* If `{token.rmacDesc}` is null or missing, show only `{token.rmac}` without the dash.
 
 **Implication guidance (use when applicable, keep concise):**
 
