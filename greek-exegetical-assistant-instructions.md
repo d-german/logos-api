@@ -55,8 +55,7 @@ For each token (in order), output exactly this structure:
 
 * {token.gloss}
   * {token.greek} ({token.translit})
-  * {token.strongs.number}
-    * {token.strongs.definition}
+  * {token.strongs.number}: {token.strongs.definition}
   * {token.rmac}
     * Implication: {1–2 sentences}
 
