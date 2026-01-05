@@ -114,5 +114,70 @@ The API now returns fronting notes with English glosses for all Greek words, mak
 }
 ```
 
+## NEW FEATURES ADDED - January 5, 2026 (continued)
+
+### 4. Louw-Nida Domain Glosses (COMPLETED ✅)
+Added human-readable domain names to API response:
+- Created `ILouwNidaService` interface and `LouwNidaService` implementation
+- Loads domain labels from `marble-domain-label-mapping.json` (embedded resource)
+- Added `DomainGloss` field to `TokenResponse`
+- Domain codes like "033005" now return labels like "Written Language"
+
+### 5. Word Frequency Data (COMPLETED ✅)
+Added word frequency information to API response:
+- Created `IWordFrequencyService` interface and `WordFrequencyService` implementation
+- Calculates frequency by counting lemma occurrences across all verses
+- Assigns ranks (1 = most common word)
+- Identifies hapax legomena (words occurring only once)
+- Added `Frequency`, `FrequencyRank`, and `IsHapax` fields to `TokenResponse`
+
+### Updated Files
+- `LogosAPI/Services/ILouwNidaService.cs` - NEW interface
+- `LogosAPI/Services/LouwNidaService.cs` - NEW implementation
+- `LogosAPI/Services/IWordFrequencyService.cs` - NEW interface
+- `LogosAPI/Services/WordFrequencyService.cs` - NEW implementation
+- `LogosAPI/Models/TokenResponse.cs` - Added DomainGloss, Frequency, FrequencyRank, IsHapax
+- `LogosAPI/Services/VerseLookupService.cs` - Inject and use new services
+- `LogosAPI/Program.cs` - Register new services
+- `LogosAPI/LogosAPI.csproj` - Add domain mapping as embedded resource
+- `LogosAPI/Data/marble-domain-label-mapping.json` - Domain label data
+- `LogosAPI.Tests/VerseLookupServiceTests.cs` - Add mocks for new services
+
+### Current API Response Structure
+```json
+{
+  "verses": [{
+    "reference": "John.1.1",
+    "tokens": [{
+      "gloss": "in/on/among",
+      "greek": "Ἐν",
+      "translit": "en",
+      "strongs": { "number": "G1722", "definition": "..." },
+      "rmac": "PREP",
+      "rmacDesc": "PREPosition",
+      "morph": { "pos": "Preposition", ... },
+      "lemma": "ἐν",
+      "domain": "067002",
+      "domainGloss": "Space",           // NEW
+      "louwNida": "67.33",
+      "role": "vc",
+      "wordType": "common",
+      "referent": "n43001001017",
+      "frequency": 2752,                 // NEW
+      "frequencyRank": 4,                // NEW
+      "isHapax": false                   // NEW
+    }],
+    "fronting": { ... }
+  }]
+}
+```
+
 ## Session Complete
-All tasks from the task manager have been completed. The Greek Exegetical API now provides comprehensive linguistic data including enriched word order fronting notes with English glosses.
+All requested features implemented:
+1. ✅ Word Order Fronting Detection
+2. ✅ Rich Linguistic Data (lemma, domain, louwNida, role, wordType, referent)
+3. ✅ Fronting Notes with English Glosses
+4. ✅ Louw-Nida Domain Glosses
+5. ✅ Word Frequency Data
+
+All 282 tests pass.

@@ -21,6 +21,9 @@
         <EmbeddedResource Include="Data\fronting.json">
             <LogicalName>LogosAPI.Data.fronting.json</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Data\marble-domain-label-mapping.json">
+            <LogicalName>LogosAPI.Data.marble-domain-label-mapping.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>
