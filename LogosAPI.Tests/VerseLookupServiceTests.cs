@@ -15,6 +15,8 @@ public sealed class VerseLookupServiceTests
     private readonly Mock<IVerseReferenceNormalizer> _mockNormalizer;
     private readonly Mock<IRmacParser> _mockRmacParser;
     private readonly Mock<IFrontingDataService> _mockFrontingDataService;
+    private readonly Mock<ILouwNidaService> _mockLouwNidaService;
+    private readonly Mock<IWordFrequencyService> _mockWordFrequencyService;
     private readonly Mock<ILogger<VerseLookupService>> _mockLogger;
     private readonly VerseLookupService _service;
 
@@ -24,6 +26,8 @@ public sealed class VerseLookupServiceTests
         _mockNormalizer = new Mock<IVerseReferenceNormalizer>();
         _mockRmacParser = new Mock<IRmacParser>();
         _mockFrontingDataService = new Mock<IFrontingDataService>();
+        _mockLouwNidaService = new Mock<ILouwNidaService>();
+        _mockWordFrequencyService = new Mock<IWordFrequencyService>();
         _mockLogger = new Mock<ILogger<VerseLookupService>>();
 
         // Setup default empty dictionaries
@@ -39,12 +43,22 @@ public sealed class VerseLookupServiceTests
         // Setup default fronting behavior (no fronting by default)
         _mockFrontingDataService.Setup(x => x.GetFronting(It.IsAny<string>()))
             .Returns((FrontingInfo?)null);
+        
+        // Setup default Louw-Nida behavior (return null for domain gloss)
+        _mockLouwNidaService.Setup(x => x.GetDomainLabel(It.IsAny<string>()))
+            .Returns((string?)null);
+        
+        // Setup default word frequency behavior (return null for frequency)
+        _mockWordFrequencyService.Setup(x => x.GetFrequency(It.IsAny<string>()))
+            .Returns((WordFrequencyInfo?)null);
 
         _service = new VerseLookupService(
             _mockBibleDataService.Object,
             _mockNormalizer.Object,
             _mockRmacParser.Object,
             _mockFrontingDataService.Object,
+            _mockLouwNidaService.Object,
+            _mockWordFrequencyService.Object,
             _mockLogger.Object);
     }
 

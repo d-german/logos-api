@@ -5,7 +5,7 @@
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
     "version": "1.6.0"
   },
-  "servers": [{"url": "https://logos.d-german.net"}],
+  "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
     "/api/verses/lookup": {
       "get": {

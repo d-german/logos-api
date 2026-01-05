@@ -19,6 +19,12 @@ builder.Services.AddSingleton<IRmacParser, RmacParser>();
 // Register FrontingDataService as Singleton - loads once, provides word order data
 builder.Services.AddSingleton<IFrontingDataService, FrontingDataService>();
 
+// Register LouwNidaService as Singleton - loads domain labels once
+builder.Services.AddSingleton<ILouwNidaService, LouwNidaService>();
+
+// Register WordFrequencyService as Singleton - calculates frequency data once
+builder.Services.AddSingleton<IWordFrequencyService, WordFrequencyService>();
+
 // Register VerseLookupService as Singleton - orchestrates lookup operations
 builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 

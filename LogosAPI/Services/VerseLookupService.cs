@@ -12,6 +12,8 @@ public sealed class VerseLookupService : IVerseLookupService
     private readonly IVerseReferenceNormalizer _normalizer;
     private readonly IRmacParser _rmacParser;
     private readonly IFrontingDataService _frontingDataService;
+    private readonly ILouwNidaService _louwNidaService;
+    private readonly IWordFrequencyService _wordFrequencyService;
     private readonly ILogger<VerseLookupService> _logger;
 
     public VerseLookupService(
@@ -19,12 +21,16 @@ public sealed class VerseLookupService : IVerseLookupService
         IVerseReferenceNormalizer normalizer,
         IRmacParser rmacParser,
         IFrontingDataService frontingDataService,
+        ILouwNidaService louwNidaService,
+        IWordFrequencyService wordFrequencyService,
         ILogger<VerseLookupService> logger)
     {
         _bibleDataService = bibleDataService ?? throw new ArgumentNullException(nameof(bibleDataService));
         _normalizer = normalizer ?? throw new ArgumentNullException(nameof(normalizer));
         _rmacParser = rmacParser ?? throw new ArgumentNullException(nameof(rmacParser));
         _frontingDataService = frontingDataService ?? throw new ArgumentNullException(nameof(frontingDataService));
+        _louwNidaService = louwNidaService ?? throw new ArgumentNullException(nameof(louwNidaService));
+        _wordFrequencyService = wordFrequencyService ?? throw new ArgumentNullException(nameof(wordFrequencyService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -120,13 +126,15 @@ public sealed class VerseLookupService : IVerseLookupService
     }
 
     /// <summary>
-    /// Maps a single token to response format
+    /// Maps a single token to response format with domain glosses and frequency data
     /// Cyclomatic Complexity: 1
     /// </summary>
     private TokenResponse MapToTokenResponse(TokenData token)
     {
         var morph = _rmacParser.Parse(token.Rmac);
         var strongs = new StrongsInfo(token.Strongs, token.StrongDef);
+        var domainGloss = _louwNidaService.GetDomainLabel(token.Domain);
+        var frequencyInfo = _wordFrequencyService.GetFrequency(token.Lemma);
         
         return new TokenResponse(
             token.Gloss,
@@ -138,10 +146,14 @@ public sealed class VerseLookupService : IVerseLookupService
             morph,
             token.Lemma,
             token.Domain,
+            domainGloss,
             token.LouwNida,
             token.Role,
             token.WordType,
-            token.Referent
+            token.Referent,
+            frequencyInfo?.Count,
+            frequencyInfo?.Rank,
+            frequencyInfo?.IsHapax
         );
     }
 
