@@ -11,17 +11,20 @@ public sealed class VerseLookupService : IVerseLookupService
     private readonly IBibleDataService _bibleDataService;
     private readonly IVerseReferenceNormalizer _normalizer;
     private readonly IRmacParser _rmacParser;
+    private readonly IFrontingDataService _frontingDataService;
     private readonly ILogger<VerseLookupService> _logger;
 
     public VerseLookupService(
         IBibleDataService bibleDataService,
         IVerseReferenceNormalizer normalizer,
         IRmacParser rmacParser,
+        IFrontingDataService frontingDataService,
         ILogger<VerseLookupService> logger)
     {
         _bibleDataService = bibleDataService ?? throw new ArgumentNullException(nameof(bibleDataService));
         _normalizer = normalizer ?? throw new ArgumentNullException(nameof(normalizer));
         _rmacParser = rmacParser ?? throw new ArgumentNullException(nameof(rmacParser));
+        _frontingDataService = frontingDataService ?? throw new ArgumentNullException(nameof(frontingDataService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -103,7 +106,8 @@ public sealed class VerseLookupService : IVerseLookupService
         }
 
         var enrichedTokens = EnrichTokens(verseData.Tokens);
-        return new VerseResponse(reference, enrichedTokens);
+        var fronting = _frontingDataService.GetFronting(reference);
+        return new VerseResponse(reference, enrichedTokens, fronting);
     }
 
     /// <summary>

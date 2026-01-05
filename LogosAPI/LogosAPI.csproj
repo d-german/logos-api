@@ -18,6 +18,9 @@
         <EmbeddedResource Include="Data\lexicon.json">
             <LogicalName>LogosAPI.Data.lexicon.json</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Data\fronting.json">
+            <LogicalName>LogosAPI.Data.fronting.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

@@ -16,6 +16,9 @@ builder.Services.AddSingleton<IStrongsNumberNormalizer, StrongsNumberNormalizer>
 // Register RmacParser as Singleton - stateless, thread-safe
 builder.Services.AddSingleton<IRmacParser, RmacParser>();
 
+// Register FrontingDataService as Singleton - loads once, provides word order data
+builder.Services.AddSingleton<IFrontingDataService, FrontingDataService>();
+
 // Register VerseLookupService as Singleton - orchestrates lookup operations
 builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 

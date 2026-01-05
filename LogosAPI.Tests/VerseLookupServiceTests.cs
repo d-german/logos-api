@@ -14,6 +14,7 @@ public sealed class VerseLookupServiceTests
     private readonly Mock<IBibleDataService> _mockBibleDataService;
     private readonly Mock<IVerseReferenceNormalizer> _mockNormalizer;
     private readonly Mock<IRmacParser> _mockRmacParser;
+    private readonly Mock<IFrontingDataService> _mockFrontingDataService;
     private readonly Mock<ILogger<VerseLookupService>> _mockLogger;
     private readonly VerseLookupService _service;
 
@@ -22,6 +23,7 @@ public sealed class VerseLookupServiceTests
         _mockBibleDataService = new Mock<IBibleDataService>();
         _mockNormalizer = new Mock<IVerseReferenceNormalizer>();
         _mockRmacParser = new Mock<IRmacParser>();
+        _mockFrontingDataService = new Mock<IFrontingDataService>();
         _mockLogger = new Mock<ILogger<VerseLookupService>>();
 
         // Setup default empty dictionaries
@@ -33,11 +35,16 @@ public sealed class VerseLookupServiceTests
         // Setup default RMAC parser behavior
         _mockRmacParser.Setup(x => x.Parse(It.IsAny<string>()))
             .Returns((string code) => code != null ? new MorphologyInfo { Pos = "Noun" } : null);
+        
+        // Setup default fronting behavior (no fronting by default)
+        _mockFrontingDataService.Setup(x => x.GetFronting(It.IsAny<string>()))
+            .Returns((FrontingInfo?)null);
 
         _service = new VerseLookupService(
             _mockBibleDataService.Object,
             _mockNormalizer.Object,
             _mockRmacParser.Object,
+            _mockFrontingDataService.Object,
             _mockLogger.Object);
     }
 
