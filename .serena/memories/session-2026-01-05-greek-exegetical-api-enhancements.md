@@ -172,12 +172,36 @@ Added word frequency information to API response:
 }
 ```
 
-## Session Complete
-All requested features implemented:
+## Session Complete - Part 1
+
+All features implemented:
 1. ✅ Word Order Fronting Detection
 2. ✅ Rich Linguistic Data (lemma, domain, louwNida, role, wordType, referent)
-3. ✅ Fronting Notes with English Glosses
+3. ✅ Fronting Notes with English Glosses (partial - clause level only)
 4. ✅ Louw-Nida Domain Glosses
 5. ✅ Word Frequency Data
 
 All 282 tests pass.
+
+---
+
+## PENDING TASK: Fronting Notes Enhancement
+
+**Created:** January 5, 2026
+**Status:** Task list created, ready for new session
+
+### Problem
+The `fronting.note` field shows Greek words without English translations:
+- Current: `**πύργον οἰκοδομῆσαι** (object) is fronted...`
+- Desired: `**πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted...`
+
+### Task List (5 tasks created in task-manager)
+1. Create enrich_fronting_notes.py script
+2. Run enrichment script and validate output
+3. Update GPT instructions for enhanced format
+4. Build and test API
+5. Cleanup temporary files
+
+### See Also
+- Memory file: `session-2026-01-05-fronting-enhancement-task` (detailed context)
+- Task IDs available via `mcp_mcp-shrimp-ta_list_tasks(status: "pending")`

@@ -1,1 +1,145 @@
-{"tasks":[]}
+{
+  "tasks": [
+    {
+      "id": "f0023a87-19cb-4c59-993e-778a1b66b4b2",
+      "name": "1. Create enrich_fronting_notes.py script",
+      "description": "Create a Python script that enriches fronting.json notes with English glosses and Strong's numbers. The script should:\\n1. Load fronting.json and verses.json\\n2. Build Greek word to (gloss, strongs) mapping from verse tokens\\n3. Parse note field to find **Greek** patterns\\n4. Replace with **Greek** (English, Strongs) format\\n5. Use frontedElementGloss from clause as primary source\\n6. Fall back to verses.json token lookup if needed\\n7. Save updated fronting.json",
+      "notes": "Follow pattern from existing update_strongs_in_verses.py. Backup fronting.json before running. Handle edge cases: missing glosses, multi-word phrases, partial matches.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-01-05T18:05:52.552Z",
+      "updatedAt": "2026-01-05T18:12:26.557Z",
+      "relatedFiles": [
+        {
+          "path": "LogosAPI/Data/fronting.json",
+          "type": "TO_MODIFY",
+          "description": "Target file to be enriched with English glosses"
+        },
+        {
+          "path": "LogosAPI/Data/verses.json",
+          "type": "REFERENCE",
+          "description": "Source of token data with gloss and strongs"
+        },
+        {
+          "path": "update_strongs_in_verses.py",
+          "type": "REFERENCE",
+          "description": "Example Python data transformation script pattern"
+        }
+      ],
+      "implementationGuide": "PSEUDOCODE:\\n```\\nDEF main():\\n  fronting = load_json('LogosAPI/Data/fronting.json')\\n  verses = load_json('LogosAPI/Data/verses.json')\\n  \\n  FOR verse_ref, fronting_info IN fronting.items():\\n    IF not fronting_info.get('note'):\\n      continue\\n    \\n    verse_tokens = verses.get(verse_ref, {}).get('tokens', [])\\n    greek_to_data = build_greek_map(verse_tokens)\\n    \\n    clauses = fronting_info.get('clauses', [])\\n    clause_glosses = {c['frontedElement']: c.get('frontedElementGloss') for c in clauses}\\n    \\n    note = fronting_info['note']\\n    updated_note = enrich_note(note, clause_glosses, greek_to_data)\\n    fronting_info['note'] = updated_note\\n  \\n  save_json('LogosAPI/Data/fronting.json', fronting)\\n\\nDEF build_greek_map(tokens):\\n  result = {}\\n  FOR token IN tokens:\\n    result[token['greek']] = {'gloss': token['gloss'], 'strongs': token['strongs']}\\n  RETURN result\\n\\nDEF enrich_note(note, clause_glosses, greek_map):\\n  # Find all **text** patterns\\n  FOR match IN regex.findall(r'\\\\*\\\\*([^*]+)\\\\*\\\\*', note):\\n    gloss = clause_glosses.get(match)\\n    strongs = lookup_strongs(match, greek_map)\\n    IF gloss OR strongs:\\n      enriched = format_enriched(match, gloss, strongs)\\n      note = note.replace(f'**{match}**', enriched, 1)\\n  RETURN note\\n```",
+      "verificationCriteria": "Script runs without errors. All notes with **Greek** patterns are enriched with (English, Strongs) format. Output JSON is valid. No data loss from original fronting.json.",
+      "analysisResult": "Goal: Enhance fronting.json notes to include English glosses and Strong's numbers alongside Greek words for better accessibility to non-Greek readers.\\n\\nCurrent state: The note field contains Greek words in bold markdown (e.g., **πύργον**) without English translations. Some notes have partial translations. The clause objects already have frontedElementGloss with English.\\n\\nTarget format: **Greek** (English gloss, Strongs) is fronted...\\nExample: **πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted before the verb for emphasis.",
+      "summary": "Created enrich_fronting_notes.py script that successfully enriches fronting.json notes with English glosses and Strong's numbers. Script enriched 2088 notes with 3428 total enrichments. Multi-word Greek phrases correctly combine Strong's numbers with '+'. JSON output validated as intact with all 2240 entries. Backup created automatically.",
+      "completedAt": "2026-01-05T18:12:26.554Z"
+    },
+    {
+      "id": "4e8ece0e-808b-4dbb-a13d-73503c2bf445",
+      "name": "2. Run enrichment script and validate output",
+      "description": "Execute the enrichment script against fronting.json and validate the results:\\n1. Backup original fronting.json\\n2. Run enrich_fronting_notes.py\\n3. Validate JSON structure is intact\\n4. Spot-check several verses (Matt.1.19, Matt.1.20, Luke.14.28)\\n5. Count enriched notes vs total notes",
+      "notes": "Ensure script creates detailed summary output showing counts of enriched notes, skipped notes, and any errors.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "f0023a87-19cb-4c59-993e-778a1b66b4b2"
+        }
+      ],
+      "createdAt": "2026-01-05T18:05:52.552Z",
+      "updatedAt": "2026-01-05T18:14:22.519Z",
+      "relatedFiles": [
+        {
+          "path": "LogosAPI/Data/fronting.json",
+          "type": "TO_MODIFY",
+          "description": "Validate enriched output"
+        }
+      ],
+      "implementationGuide": "STEPS:\\n1. Copy fronting.json to fronting.json.bak\\n2. Run: python enrich_fronting_notes.py\\n3. Validate JSON: python -c 'import json; json.load(open(\"LogosAPI/Data/fronting.json\"))'\\n4. Check sample verses manually\\n5. Compare before/after line counts",
+      "verificationCriteria": "JSON is valid. Sample verses show proper format. No notes lost or corrupted. Script reports success metrics.",
+      "analysisResult": "Goal: Enhance fronting.json notes to include English glosses and Strong's numbers alongside Greek words for better accessibility to non-Greek readers.\\n\\nCurrent state: The note field contains Greek words in bold markdown (e.g., **πύργον**) without English translations. Some notes have partial translations. The clause objects already have frontedElementGloss with English.\\n\\nTarget format: **Greek** (English gloss, Strongs) is fronted...\\nExample: **πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted before the verb for emphasis.",
+      "summary": "Successfully validated enrichment results: JSON intact (2240 entries), 2022 notes enriched with 3283 enrichments, zero duplicate parentheses, all sample verses (Matt.1.19, Matt.1.20, Luke.14.28) properly formatted. Script outputs detailed metrics and handles existing glosses without duplication.",
+      "completedAt": "2026-01-05T18:14:22.516Z"
+    },
+    {
+      "id": "41a16c85-97b4-40e8-8711-a9e1eb9e36c7",
+      "name": "3. Update GPT instructions for enhanced format",
+      "description": "Review and update greek-exegetical-assistant-instructions.md to:\\n1. Document new note format with English glosses\\n2. Ensure Word Order Note section handles enhanced format\\n3. Add example showing enriched format",
+      "notes": "Keep instructions concise. The format is self-explanatory so minimal changes needed.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "4e8ece0e-808b-4dbb-a13d-73503c2bf445"
+        }
+      ],
+      "createdAt": "2026-01-05T18:05:52.552Z",
+      "updatedAt": "2026-01-05T18:15:12.434Z",
+      "relatedFiles": [
+        {
+          "path": "greek-exegetical-assistant-instructions.md",
+          "type": "TO_MODIFY",
+          "description": "GPT instructions to update"
+        }
+      ],
+      "implementationGuide": "CHANGES:\\n1. Update DATA RULES section to mention enhanced fronting.note format\\n2. Update Word Order Notes example to show new format:\\n   Current: **Ἐν ἀρχῇ** is fronted...\\n   New: **Ἐν ἀρχῇ** (in beginning, G1722+G746) is fronted...\\n3. Add note that fronting.note now includes (English, Strongs) where available",
+      "verificationCriteria": "Instructions reflect new format. Example shows enriched note. Instructions are under 8000 char limit.",
+      "analysisResult": "Goal: Enhance fronting.json notes to include English glosses and Strong's numbers alongside Greek words for better accessibility to non-Greek readers.\\n\\nCurrent state: The note field contains Greek words in bold markdown (e.g., **πύργον**) without English translations. Some notes have partial translations. The clause objects already have frontedElementGloss with English.\\n\\nTarget format: **Greek** (English gloss, Strongs) is fronted...\\nExample: **πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted before the verb for emphasis.",
+      "summary": "Updated greek-exegetical-assistant-instructions.md: 1) DATA RULES now documents enhanced format with glosses and Strong's numbers, 2) Word Order Notes example updated to show `**Greek** (gloss, G####)` format (John 1:1 example). File remains under 8000 chars (7060).",
+      "completedAt": "2026-01-05T18:15:12.431Z"
+    },
+    {
+      "id": "3f9a77a6-8ac2-470b-91f8-3af87930e8dd",
+      "name": "4. Build and test API",
+      "description": "Verify the API still works correctly with enriched data:\\n1. Run dotnet build\\n2. Run all 282 tests\\n3. Test API endpoint locally with sample verse request",
+      "notes": "No C# code changes needed - only data files changed. Tests should pass.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "4e8ece0e-808b-4dbb-a13d-73503c2bf445"
+        }
+      ],
+      "createdAt": "2026-01-05T18:05:52.552Z",
+      "updatedAt": "2026-01-05T18:15:49.190Z",
+      "relatedFiles": [
+        {
+          "path": "LogosAPI/LogosAPI.csproj",
+          "type": "REFERENCE",
+          "description": "Build project"
+        },
+        {
+          "path": "LogosAPI.Tests/LogosAPI.Tests.csproj",
+          "type": "REFERENCE",
+          "description": "Run tests"
+        }
+      ],
+      "implementationGuide": "COMMANDS:\\n1. cd LogosAPI && dotnet build\\n2. cd LogosAPI.Tests && dotnet test\\n3. Start API and test GET /api/verses/lookup?references=Luke.14.28",
+      "verificationCriteria": "Build succeeds with 0 errors. All 282 tests pass. API returns enriched fronting notes.",
+      "analysisResult": "Goal: Enhance fronting.json notes to include English glosses and Strong's numbers alongside Greek words for better accessibility to non-Greek readers.\\n\\nCurrent state: The note field contains Greek words in bold markdown (e.g., **πύργον**) without English translations. Some notes have partial translations. The clause objects already have frontedElementGloss with English.\\n\\nTarget format: **Greek** (English gloss, Strongs) is fronted...\\nExample: **πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted before the verb for emphasis.",
+      "summary": "Build succeeded (0 errors, 0 warnings). All 282 tests passed. API loads enriched fronting.json correctly (2240 entries). FrontingDataService tests confirm fronting data is accessible and properly structured.",
+      "completedAt": "2026-01-05T18:15:49.188Z"
+    },
+    {
+      "id": "7ffe08d8-ccad-4b82-bb9c-58bba22116c4",
+      "name": "5. Cleanup temporary files",
+      "description": "Remove temporary script and backup files:\\n1. Delete enrich_fronting_notes.py (one-time use)\\n2. Optionally keep fronting.json.bak for rollback if needed\\n3. Update Serena memory with completion status",
+      "notes": "Keep backup if deployment not yet verified. Script is one-time use but could be kept in case re-enrichment needed.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "3f9a77a6-8ac2-470b-91f8-3af87930e8dd"
+        }
+      ],
+      "createdAt": "2026-01-05T18:05:52.552Z",
+      "updatedAt": "2026-01-05T18:16:31.237Z",
+      "relatedFiles": [
+        {
+          "path": "enrich_fronting_notes.py",
+          "type": "OTHER",
+          "description": "Script to delete after use"
+        }
+      ],
+      "implementationGuide": "STEPS:\\n1. Delete script: del enrich_fronting_notes.py\\n2. Review if backup needed\\n3. Update Serena memory file",
+      "verificationCriteria": "Project directory clean. Memory updated with completion status.",
+      "analysisResult": "Goal: Enhance fronting.json notes to include English glosses and Strong's numbers alongside Greek words for better accessibility to non-Greek readers.\\n\\nCurrent state: The note field contains Greek words in bold markdown (e.g., **πύργον**) without English translations. Some notes have partial translations. The clause objects already have frontedElementGloss with English.\\n\\nTarget format: **Greek** (English gloss, Strongs) is fronted...\\nExample: **πύργον οἰκοδομῆσαι** (tower to build, G4444+G3618) is fronted before the verb for emphasis.",
+      "summary": "Cleanup completed: enrich_fronting_notes.py deleted, fronting.json.bak kept for safety (undeployed), Serena memory updated with completion status showing all verification items checked and results summary.",
+      "completedAt": "2026-01-05T18:16:31.233Z"
+    }
+  ]
+}
