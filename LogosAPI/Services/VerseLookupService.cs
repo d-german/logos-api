@@ -135,7 +135,13 @@ public sealed class VerseLookupService : IVerseLookupService
             strongs,
             token.Rmac,
             token.RmacDesc,
-            morph
+            morph,
+            token.Lemma,
+            token.Domain,
+            token.LouwNida,
+            token.Role,
+            token.WordType,
+            token.Referent
         );
     }
 
