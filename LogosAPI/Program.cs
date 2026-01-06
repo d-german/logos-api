@@ -28,6 +28,9 @@ builder.Services.AddSingleton<IWordFrequencyService, WordFrequencyService>();
 // Register VerseLookupService as Singleton - orchestrates lookup operations
 builder.Services.AddSingleton<IVerseLookupService, VerseLookupService>();
 
+// Register SemanticDomainService as Singleton - loads semantic domains data once
+builder.Services.AddSingleton<ISemanticDomainService, SemanticDomainService>();
+
 // Register CommentaryService with HttpClient for external HelloAO API calls
 builder.Services.AddHttpClient<ICommentaryService, CommentaryService>();
 

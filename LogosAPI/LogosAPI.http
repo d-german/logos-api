@@ -1,6 +1,35 @@
 @LogosAPI_HostAddress = http://localhost:5133
 
-GET {{LogosAPI_HostAddress}}/weatherforecast/
+### Get list of verses
+GET {{LogosAPI_HostAddress}}/api/verses/John.3.16
+Accept: application/json
+
+### Get lexicon entry
+GET {{LogosAPI_HostAddress}}/api/lexicon/G25
+Accept: application/json
+
+### Get available semantic domains
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/domains
+Accept: application/json
+
+### Get words in domain 57 (Possess, Transfer, Exchange)
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/57?maxVersesPerWord=3
+Accept: application/json
+
+### Get words in domain 33 (Communication)
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/33?maxVersesPerWord=2
+Accept: application/json
+
+### Get related words for a specific L-N number
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/related?louwNida=57.1&limit=10&maxVersesPerWord=3
+Accept: application/json
+
+### Test invalid domain (should return 404)
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/9999
+Accept: application/json
+
+### Test missing louwNida parameter (should return 400)
+GET {{LogosAPI_HostAddress}}/api/semantic-domain/related
 Accept: application/json
 
 ###

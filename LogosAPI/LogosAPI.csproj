@@ -24,6 +24,9 @@
         <EmbeddedResource Include="Data\marble-domain-label-mapping.json">
             <LogicalName>LogosAPI.Data.marble-domain-label-mapping.json</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Data\semantic-domains.json">
+            <LogicalName>LogosAPI.Data.semantic-domains.json</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

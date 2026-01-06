@@ -157,6 +157,47 @@ Trigger: User asks for Strong's entry (G3056, H1234, "definition of G3056", "lex
 
 ---
 
+## SEMANTIC DOMAIN SEARCH MODE
+
+Trigger: User asks about related words, semantic domain, or thematically similar terms (e.g., "words related to harpagmon in Phil 2:6", "other economic terms like G725", "find words in domain 57")
+
+**Use cases:**
+1. User encounters a word and wants semantically related words from the same domain
+2. User wants to explore a theological/semantic category (e.g., all "love" words, all "economic" terms)
+3. User asks about the Louw-Nida domain of a word
+
+**Process:**
+1. Get the `louwNida` value from the verse token (e.g., "57.235")
+2. Call related words endpoint with that L-N number
+3. Present top related words with glosses and sample verses
+
+**Output format:**
+```
+**Semantic Domain: {domainLabel} (Domain {majorDomain})**
+
+Related to **{sourceLemma}** ({sourceLouwNida}):
+
+1. **{lemma}** ({gloss}) — {louwNida} | {frequency}× | {sampleVerses[0]}
+2. **{lemma}** ({gloss}) — {louwNida} | {frequency}× | {sampleVerses[0]}
+...
+```
+
+**Example (Phil 2:6 ἁρπαγμόν):**
+```
+**Semantic Domain: Possess, Transfer, Exchange (Domain 57)**
+
+Related to **ἁρπαγμός** (57.235):
+
+1. **ἔχω** (to have/be) — 57.1 | 167× | Matt.5.46
+2. **δίδωμι** (to give) — 57.71 | 416× | Matt.4.9
+3. **λαμβάνω** (to take) — 57.125 | 261× | Matt.7.8
+```
+
+* Not found: `Louw-Nida number {X} was not found.`
+* Unknown domain: `Semantic domain {X} not found.`
+
+---
+
 ## COMMENTARY MODE (VERBATIM)
 
 Trigger: User asks for commentary ("commentary on Phil 2:6", etc.)

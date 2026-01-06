@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Logos Bible API",
-    "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
-    "version": "1.7.0"
+    "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, semantic domain search, and commentary from multiple sources.",
+    "version": "1.8.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -45,6 +45,48 @@
           "200": {"description": "Success", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LexiconLookupResponse"}}}},
           "400": {"description": "Invalid format", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
           "404": {"description": "Not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
+    "/api/semantic-domain/domains": {
+      "get": {
+        "operationId": "getAvailableDomains",
+        "summary": "Get all available semantic domain numbers",
+        "description": "Returns a list of all major Louw-Nida semantic domain numbers (1-93) available in the data.",
+        "responses": {
+          "200": {"description": "List of domain numbers", "content": {"application/json": {"schema": {"type": "array", "items": {"type": "integer"}, "example": [1, 2, 33, 57, 93]}}}}
+        }
+      }
+    },
+    "/api/semantic-domain/{majorDomain}": {
+      "get": {
+        "operationId": "getWordsByDomain",
+        "summary": "Get all words in a semantic domain",
+        "description": "Returns all Greek words in a Louw-Nida major semantic domain with sample verse references. Use domain 57 for economic terms, 33 for communication, etc.",
+        "parameters": [
+          {"name": "majorDomain", "in": "path", "required": true, "description": "Major domain number (1-93)", "schema": {"type": "integer", "example": 57}},
+          {"name": "maxVersesPerWord", "in": "query", "required": false, "description": "Maximum sample verses per word (default: 3)", "schema": {"type": "integer", "default": 3, "example": 3}}
+        ],
+        "responses": {
+          "200": {"description": "Domain search result", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DomainSearchResult"}}}},
+          "404": {"description": "Domain not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
+        }
+      }
+    },
+    "/api/semantic-domain/related": {
+      "get": {
+        "operationId": "getRelatedWords",
+        "summary": "Get words related by Louw-Nida semantic domain",
+        "description": "Given a Louw-Nida number (e.g., 57.235), finds other words in the same major domain. Useful for finding semantically related Greek words.",
+        "parameters": [
+          {"name": "louwNida", "in": "query", "required": true, "description": "Louw-Nida reference number (e.g., 57.235)", "schema": {"type": "string", "example": "57.235"}},
+          {"name": "limit", "in": "query", "required": false, "description": "Maximum related words to return (default: 10)", "schema": {"type": "integer", "default": 10, "example": 10}},
+          {"name": "maxVersesPerWord", "in": "query", "required": false, "description": "Maximum sample verses per word (default: 3)", "schema": {"type": "integer", "default": 3, "example": 3}}
+        ],
+        "responses": {
+          "200": {"description": "Related words result", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RelatedWordsResult"}}}},
+          "400": {"description": "Missing louwNida parameter", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}},
+          "404": {"description": "Louw-Nida number not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}}
         }
       }
     },
@@ -151,6 +193,45 @@
           "definition": {"type": "string"}
         },
         "required": ["strongsNumber", "definition"]
+      },
+      "DomainSearchResult": {
+        "type": "object",
+        "description": "Result of a semantic domain search",
+        "properties": {
+          "majorDomain": {"type": "integer", "description": "Major Louw-Nida domain number"},
+          "domainLabel": {"type": "string", "description": "Human-readable domain label (e.g., 'Possess, Transfer, Exchange')"},
+          "totalEntries": {"type": "integer", "description": "Number of word entries in this domain"},
+          "entries": {"type": "array", "items": {"$ref": "#/components/schemas/DomainEntry"}}
+        },
+        "required": ["majorDomain", "domainLabel", "totalEntries", "entries"]
+      },
+      "DomainEntry": {
+        "type": "object",
+        "description": "A word entry in a semantic domain",
+        "properties": {
+          "subdomain": {"type": "string", "description": "Subdomain number within major domain"},
+          "subdomainLabel": {"type": "string", "description": "Human-readable subdomain label"},
+          "louwNida": {"type": "string", "description": "Full L-N reference (e.g., '57.235')"},
+          "lemma": {"type": "string", "description": "Greek dictionary form"},
+          "gloss": {"type": "string", "description": "English translation"},
+          "strongs": {"type": "string", "description": "Strong's number"},
+          "frequency": {"type": "integer", "description": "Occurrences in NT"},
+          "isHapax": {"type": "boolean", "description": "True if occurs only once"},
+          "sampleVerses": {"type": "array", "items": {"type": "string"}, "description": "Sample verse references"}
+        },
+        "required": ["subdomain", "louwNida", "lemma", "gloss", "strongs", "frequency", "isHapax", "sampleVerses"]
+      },
+      "RelatedWordsResult": {
+        "type": "object",
+        "description": "Words semantically related by Louw-Nida domain",
+        "properties": {
+          "sourceLouwNida": {"type": "string", "description": "Source L-N number used for lookup"},
+          "sourceLemma": {"type": "string", "description": "Lemma of source word"},
+          "majorDomain": {"type": "integer", "description": "Major domain number"},
+          "domainLabel": {"type": "string", "description": "Domain label"},
+          "relatedWords": {"type": "array", "items": {"$ref": "#/components/schemas/DomainEntry"}}
+        },
+        "required": ["sourceLouwNida", "sourceLemma", "majorDomain", "domainLabel", "relatedWords"]
       },
       "CommentaryLookupResponse": {
         "type": "object",
