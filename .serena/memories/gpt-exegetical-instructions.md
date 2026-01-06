@@ -16,7 +16,9 @@ This instruction set is designed to be used as GPT instructions (system prompt) 
 
 ### 1. Seven-Section Analysis Structure
 
-For new passage analysis, the GPT outputs exactly 7 numbered sections:
+For new passage analysis, the GPT outputs exactly 7 numbered sections.
+
+**Important:** For **multiple verses** (ranges like John 1:1-14), Section 7 (Interlinear) is replaced with a note asking the user to request a single verse for detailed word-by-word analysis. This prevents excessive output.
 
 1. **English Translation** - Smooth, accurate translation based on NA28/UBS5
 2. **Cross References** - Top 5 relevant parallel passages with brief quotes

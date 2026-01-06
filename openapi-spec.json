@@ -11,12 +11,12 @@
       "get": {
         "operationId": "lookupVerses",
         "summary": "Look up Bible verses with linguistic data",
-        "description": "Retrieves verse text with original Greek words, transliteration, Strong's numbers, morphology, and definitions. Supports single verses (Matt.1.1) and verse RANGES (Matt.1.1-4 expands to Matt.1.1, Matt.1.2, Matt.1.3, Matt.1.4). Multiple formats accepted: Matt.1.1, Matthew 1:1, Mt 1:1, etc.",
+        "description": "Retrieves verses with Greek text, Strong's numbers, morphology. Supports RANGES (Matt.1.1-4 expands to individual verses). Formats: Matt.1.1, Matthew 1:1, Mt 1:1.",
         "parameters": [{
           "name": "verseReferences",
           "in": "query",
           "required": true,
-          "description": "One or more verse references. Supports single verses (Matt.1.1) or verse RANGES using hyphen (Matt.1.1-4). Ranges are automatically expanded. Format: Book.Chapter.Verse or Book.Chapter.StartVerse-EndVerse",
+          "description": "Verse references. Supports RANGES (Matt.1.1-4). Format: Book.Chapter.Verse or Book.Chapter.Start-End",
           "schema": {"type": "array", "items": {"type": "string"}, "example": ["Matt.1.1-4", "John.3.16"]}
         }],
         "responses": {
@@ -52,12 +52,12 @@
       "get": {
         "operationId": "getAllCommentaries",
         "summary": "Get commentary from ALL sources for multiple verses",
-        "description": "Retrieves commentary from all available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call. Supports verse RANGES (e.g., Matt.1.1-4 expands to verses 1-4). Only commentaries with actual content are returned.",
+        "description": "Commentary from all sources. Supports verse RANGES (Matt.1.1-4). Only sources with content returned.",
         "parameters": [{
           "name": "verseReferences",
           "in": "query",
           "required": true,
-          "description": "One or more verse references. Supports single verses (John.1.3) or verse RANGES using hyphen (Matt.1.1-4). Ranges are automatically expanded.",
+          "description": "Verse references. Supports RANGES (Matt.1.1-4).",
           "schema": {"type": "array", "items": {"type": "string"}, "example": ["John.1.1-3", "Rom.8.28"]}
         }],
         "responses": {
