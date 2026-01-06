@@ -3,7 +3,7 @@
   "info": {
     "title": "Logos Bible API",
     "description": "API for looking up Bible verses with Greek/Hebrew linguistic data, lexicon definitions, and commentary from multiple sources.",
-    "version": "1.6.0"
+    "version": "1.7.0"
   },
   "servers": [{"url": "https://wispy-koi-d-german-8684f0e9.koyeb.app"}],
   "paths": {
@@ -11,11 +11,13 @@
       "get": {
         "operationId": "lookupVerses",
         "summary": "Look up Bible verses with linguistic data",
+        "description": "Retrieves verse text with original Greek words, transliteration, Strong's numbers, morphology, and definitions. Supports single verses (Matt.1.1) and verse RANGES (Matt.1.1-4 expands to Matt.1.1, Matt.1.2, Matt.1.3, Matt.1.4). Multiple formats accepted: Matt.1.1, Matthew 1:1, Mt 1:1, etc.",
         "parameters": [{
           "name": "verseReferences",
           "in": "query",
           "required": true,
-          "schema": {"type": "array", "items": {"type": "string"}, "example": ["Matt.1.1", "John.3.16"]}
+          "description": "One or more verse references. Supports single verses (Matt.1.1) or verse RANGES using hyphen (Matt.1.1-4). Ranges are automatically expanded. Format: Book.Chapter.Verse or Book.Chapter.StartVerse-EndVerse",
+          "schema": {"type": "array", "items": {"type": "string"}, "example": ["Matt.1.1-4", "John.3.16"]}
         }],
         "responses": {
           "200": {
@@ -50,13 +52,13 @@
       "get": {
         "operationId": "getAllCommentaries",
         "summary": "Get commentary from ALL sources for multiple verses",
-        "description": "Retrieves commentary from all available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call. Only commentaries with actual content are returned.",
+        "description": "Retrieves commentary from all available commentary sources (Tyndale, John Gill, Matthew Henry, Adam Clarke, Jamieson-Fausset-Brown, Keil-Delitzsch) for one or more verses in a single call. Supports verse RANGES (e.g., Matt.1.1-4 expands to verses 1-4). Only commentaries with actual content are returned.",
         "parameters": [{
           "name": "verseReferences",
           "in": "query",
           "required": true,
-          "description": "One or more verse references",
-          "schema": {"type": "array", "items": {"type": "string"}, "example": ["John.1.3", "Rom.8.28"]}
+          "description": "One or more verse references. Supports single verses (John.1.3) or verse RANGES using hyphen (Matt.1.1-4). Ranges are automatically expanded.",
+          "schema": {"type": "array", "items": {"type": "string"}, "example": ["John.1.1-3", "Rom.8.28"]}
         }],
         "responses": {
           "200": {"description": "Commentary from all sources", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AllCommentariesLookupResponse"}}}},
@@ -68,7 +70,7 @@
       "get": {
         "operationId": "getCommentary",
         "summary": "Get commentary for a verse from a specific source",
-        "description": "Retrieves commentary for a specific verse from the specified commentary source.",
+        "description": "Retrieves commentary for a specific verse from the specified commentary source. Multiple reference formats accepted: John.1.3, Jn 1:3, John 1:3, etc.",
         "parameters": [
           {
             "name": "commentaryId",
@@ -81,7 +83,7 @@
             "name": "reference",
             "in": "path",
             "required": true,
-            "description": "Verse reference (e.g., John.1.3, Jn 1:3, Gen.1.1)",
+            "description": "Verse reference. Multiple formats accepted: John.1.3, Jn 1:3, John 1:3. For ranges, use the /api/commentary/all endpoint instead.",
             "schema": {"type": "string", "example": "John.1.3"}
           }
         ],

@@ -234,20 +234,17 @@ public sealed class VerseLookupServiceTests
 
     private void SetupNormalizer(string input, string output)
     {
+        IReadOnlyList<string> expanded = new[] { output };
         _mockNormalizer
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type
-            .Setup(x => x.TryNormalize(input, out output))
-#pragma warning restore CS8600
+            .Setup(x => x.TryExpandReference(input, out expanded))
             .Returns(true);
     }
 
     private void SetupNormalizerFails(string input)
     {
-        string? output = null;
+        IReadOnlyList<string> expanded = Array.Empty<string>();
         _mockNormalizer
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type
-            .Setup(x => x.TryNormalize(input, out output))
-#pragma warning restore CS8600
+            .Setup(x => x.TryExpandReference(input, out expanded))
             .Returns(false);
     }
 

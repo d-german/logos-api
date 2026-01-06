@@ -11,12 +11,21 @@ public sealed partial class VerseReferenceNormalizer : IVerseReferenceNormalizer
     private static readonly Dictionary<string, string> BookAliases = CreateBookAliases();
 
     /// <summary>
-    /// Regex pattern to parse verse references
+    /// Regex pattern to parse single verse references (no range)
     /// Groups: 1=Number prefix (optional), 2=Book name, 3=Chapter, 4=Verse
+    /// Note: Excludes hyphen from delimiters to avoid conflicts with range syntax
     /// Cyclomatic Complexity: 1
     /// </summary>
-    [GeneratedRegex(@"^\s*(?:(\d|I{1,3}|First|Second|Third)\s*)?([A-Za-z]+)[\s\.]*(\d+)[\s:\.\-]+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"^\s*(?:(\d|I{1,3}|First|Second|Third)\s*)?([A-Za-z]+)[\s\.]*(\d+)[\s:\.]+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex VerseReferencePattern();
+
+    /// <summary>
+    /// Regex pattern to parse verse range references (e.g., Matt.1.1-4)
+    /// Groups: 1=Number prefix (optional), 2=Book name, 3=Chapter, 4=Start verse, 5=End verse
+    /// Cyclomatic Complexity: 1
+    /// </summary>
+    [GeneratedRegex(@"^\s*(?:(\d|I{1,3}|First|Second|Third)\s*)?([A-Za-z]+)[\s\.]*(\d+)[\s:\.]+(\d+)\s*-\s*(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex VerseRangePattern();
 
     /// <inheritdoc />
     public string Normalize(string input)
@@ -48,6 +57,92 @@ public sealed partial class VerseReferenceNormalizer : IVerseReferenceNormalizer
     public bool IsValid(string input)
     {
         return TryNormalize(input, out _);
+    }
+
+    /// <inheritdoc />
+    public bool TryExpandReference(string input, out IReadOnlyList<string> expanded)
+    {
+        expanded = Array.Empty<string>();
+
+        if (string.IsNullOrWhiteSpace(input))
+            return false;
+
+        // First try to match as a range
+        if (TryExpandRange(input, out var rangeExpanded))
+        {
+            expanded = rangeExpanded;
+            return true;
+        }
+
+        // Fall back to single verse
+        if (TryNormalize(input, out var normalized))
+        {
+            expanded = new[] { normalized! };
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to parse and expand a verse range
+    /// Cyclomatic Complexity: 3
+    /// </summary>
+    private static bool TryExpandRange(string input, out IReadOnlyList<string> expanded)
+    {
+        expanded = Array.Empty<string>();
+
+        var match = VerseRangePattern().Match(input);
+        if (!match.Success)
+            return false;
+
+        return TryBuildExpandedRange(match, out expanded);
+    }
+
+    /// <summary>
+    /// Builds expanded verse list from range match
+    /// Cyclomatic Complexity: 4
+    /// </summary>
+    private static bool TryBuildExpandedRange(Match match, out IReadOnlyList<string> expanded)
+    {
+        expanded = Array.Empty<string>();
+
+        var numberPrefix = NormalizeNumberPrefix(match.Groups[1].Value);
+        var bookName = match.Groups[2].Value;
+        var chapter = match.Groups[3].Value.TrimStart('0');
+        var startVerseStr = match.Groups[4].Value.TrimStart('0');
+        var endVerseStr = match.Groups[5].Value.TrimStart('0');
+
+        if (string.IsNullOrEmpty(chapter)) chapter = "0";
+        if (string.IsNullOrEmpty(startVerseStr)) startVerseStr = "0";
+        if (string.IsNullOrEmpty(endVerseStr)) endVerseStr = "0";
+
+        var canonicalBook = GetCanonicalBookName(numberPrefix, bookName);
+        if (canonicalBook is null)
+            return false;
+
+        if (!int.TryParse(startVerseStr, out var startVerse) || !int.TryParse(endVerseStr, out var endVerse))
+            return false;
+
+        if (startVerse > endVerse)
+            return false;
+
+        expanded = GenerateVerseRange(canonicalBook, chapter, startVerse, endVerse);
+        return true;
+    }
+
+    /// <summary>
+    /// Generates a list of verse references for the given range
+    /// Cyclomatic Complexity: 2
+    /// </summary>
+    private static IReadOnlyList<string> GenerateVerseRange(string book, string chapter, int startVerse, int endVerse)
+    {
+        var result = new List<string>(endVerse - startVerse + 1);
+        for (var verse = startVerse; verse <= endVerse; verse++)
+        {
+            result.Add(FormatReference(book, chapter, verse.ToString()));
+        }
+        return result;
     }
 
     /// <summary>

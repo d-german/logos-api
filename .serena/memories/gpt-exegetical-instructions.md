@@ -82,9 +82,20 @@ RMAC_CODE — {token.rmacDesc verbatim}
 ## API Integration
 
 The GPT integrates with LogosAPI endpoints:
-- `/api/verses` - Retrieve verse data with morphology
-- `/api/lexicon` - Strong's dictionary lookups
-- `/api/commentary` - Traditional biblical commentaries
+- `/api/verses/lookup` - Retrieve verse data with morphology (supports verse ranges like Matt.1.1-4)
+- `/api/lexicon/{strongsNumber}` - Strong's dictionary lookups
+- `/api/commentary/all` - Commentary from ALL sources for multiple verses (supports ranges)
+- `/api/commentary/{commentaryId}/{reference}` - Commentary from a specific source
+
+### Verse Reference Formats
+
+The API accepts flexible verse reference formats:
+- **Canonical:** `Matt.1.1`, `John.3.16`, `1Cor.13.4`
+- **Human-readable:** `Matthew 1:1`, `John 3:16`, `1 Corinthians 13:4`
+- **Abbreviated:** `Mt 1:1`, `Jn 3:16`, `1Cor 13:4`
+- **Verse ranges:** `Matt.1.1-4` (expands to Matt.1.1, Matt.1.2, Matt.1.3, Matt.1.4)
+
+The GPT can request passages like "John 1:1-14" and the API will automatically expand the range.
 
 ## Design Principles
 

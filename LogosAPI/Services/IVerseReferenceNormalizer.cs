@@ -22,4 +22,13 @@ public interface IVerseReferenceNormalizer
     /// Checks if input can be normalized to a valid reference
     /// </summary>
     bool IsValid(string input);
+
+    /// <summary>
+    /// Expands a verse reference (which may be a range like Matt.1.1-4) into individual verse references.
+    /// Returns multiple normalized references for ranges, or a single reference for non-ranges.
+    /// </summary>
+    /// <param name="input">Input reference, possibly including a verse range</param>
+    /// <param name="expanded">The expanded list of normalized verse references</param>
+    /// <returns>True if the reference was successfully parsed and expanded</returns>
+    bool TryExpandReference(string input, out IReadOnlyList<string> expanded);
 }

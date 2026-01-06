@@ -46,12 +46,15 @@ Note meaning-affecting variants only. Otherwise: `No major variants are typicall
 
 #### Quick Gloss (Greek Word Order)
 
-Before the token cards, output a single line showing glosses in Greek word order — a quick literal rendering:
+Before the token cards, output a **Markdown blockquote** showing glosses in Greek word order — a quick literal rendering.
 
-**Format:** `{gloss1} {gloss2} {gloss3} ...`
+**Format:**
+> {gloss1} {gloss2} {gloss3} ...
 
 **Example (John 3:16):**
 > thus for loved the God the world so-that the Son the only he-gave that everyone who believes in him not perish but have life eternal
+
+**Always use the `>` Markdown blockquote for this section.**
 
 Use hyphens to join multi-word glosses that represent a single Greek word. This gives readers a quick literal word-order view before the detailed analysis.
 

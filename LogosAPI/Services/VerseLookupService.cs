@@ -60,9 +60,9 @@ public sealed class VerseLookupService : IVerseLookupService
 
         foreach (var reference in references)
         {
-            if (_normalizer.TryNormalize(reference, out var normalizedRef))
+            if (_normalizer.TryExpandReference(reference, out var expandedRefs))
             {
-                normalized.Add(normalizedRef!);
+                normalized.AddRange(expandedRefs);
             }
             else
             {

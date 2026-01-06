@@ -32,24 +32,23 @@ public sealed class CommentaryController : ControllerBase
     /// <param name="reference">Verse reference (e.g., "John.1.3", "Jn 1:3", "Gen.1.1")</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Commentary for the specified verse</returns>
-    [HttpGet("{commentaryId}/{reference}")]
-    [ProducesResponseType(typeof(CommentaryLookupResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CommentaryLookupResponse>> GetCommentary(
         string commentaryId,
         string reference,
         CancellationToken cancellationToken)
     {
-        // Normalize the verse reference
-        if (!_normalizer.TryNormalize(reference, out var normalizedRef))
+        // Use TryExpandReference to normalize the verse reference (handles both single verses and ranges)
+        if (!_normalizer.TryExpandReference(reference, out var expandedRefs) || expandedRefs.Count == 0)
         {
             _logger.LogWarning("Invalid verse reference: {Reference}", reference);
             return BadRequest(new { error = $"Invalid verse reference format: '{reference}'" });
         }
 
+        // For single-verse commentary endpoint, take only the first verse if a range is provided
+        var normalizedRef = expandedRefs[0];
+
         // Parse the normalized reference (format: Book.Chapter.Verse)
-        var parts = normalizedRef!.Split('.');
+        var parts = normalizedRef.Split('.');
         if (parts.Length < 2)
         {
             return BadRequest(new { error = $"Invalid verse reference format: '{reference}'" });
@@ -80,9 +79,6 @@ public sealed class CommentaryController : ControllerBase
     /// <param name="verseReferences">One or more verse references (e.g., "John.1.3", "Rom.8.28")</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Commentary from all sources for the specified verses</returns>
-    [HttpGet("all")]
-    [ProducesResponseType(typeof(AllCommentariesLookupResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AllCommentariesLookupResponse>> GetAllCommentaries(
         [FromQuery] string[] verseReferences,
         CancellationToken cancellationToken)
@@ -97,24 +93,28 @@ public sealed class CommentaryController : ControllerBase
 
         foreach (var reference in verseReferences)
         {
-            if (!_normalizer.TryNormalize(reference, out var normalizedRef))
+            // Use TryExpandReference to support verse ranges (e.g., "Matt.1.1-4")
+            if (!_normalizer.TryExpandReference(reference, out var expandedRefs))
             {
                 invalidReferences.Add(reference);
                 continue;
             }
 
-            var parts = normalizedRef!.Split('.');
-            if (parts.Length < 3)
+            foreach (var normalizedRef in expandedRefs)
             {
-                invalidReferences.Add(reference);
-                continue;
+                var parts = normalizedRef.Split('.');
+                if (parts.Length < 3)
+                {
+                    invalidReferences.Add(reference);
+                    continue;
+                }
+
+                var book = ConvertToHelloAoBookId(parts[0]);
+                var chapter = int.Parse(parts[1]);
+                var verse = int.Parse(parts[2]);
+
+                parsedReferences.Add((book, chapter, verse, normalizedRef));
             }
-
-            var book = ConvertToHelloAoBookId(parts[0]);
-            var chapter = int.Parse(parts[1]);
-            var verse = int.Parse(parts[2]);
-
-            parsedReferences.Add((book, chapter, verse, normalizedRef));
         }
 
         if (invalidReferences.Count > 0)

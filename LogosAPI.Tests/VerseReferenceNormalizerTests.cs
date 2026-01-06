@@ -112,7 +112,6 @@ public sealed class VerseReferenceNormalizerTests
     [InlineData("Matt 1.1", "Matt.1.1")]
     [InlineData("Matt.1.1", "Matt.1.1")]
     [InlineData("Matt.1:1", "Matt.1.1")]
-    [InlineData("Matt 1-1", "Matt.1.1")]
     public void Normalize_DifferentDelimiters_ReturnsCanonical(string input, string expected)
     {
         var result = _normalizer.Normalize(input);
@@ -260,6 +259,63 @@ public sealed class VerseReferenceNormalizerTests
     {
         var result = _normalizer.Normalize(input);
         Assert.Equal(expected, result);
+    }
+
+    #endregion
+
+    #region TryExpandReference Tests - Verse Range Support
+
+    [Theory]
+    [InlineData("Matt.1.1-4", new[] { "Matt.1.1", "Matt.1.2", "Matt.1.3", "Matt.1.4" })]
+    [InlineData("Matt.1.1-1", new[] { "Matt.1.1" })]
+    [InlineData("John.3.16-17", new[] { "John.3.16", "John.3.17" })]
+    [InlineData("1 Cor 13:1-3", new[] { "1Cor.13.1", "1Cor.13.2", "1Cor.13.3" })]
+    [InlineData("Rev 22:20-21", new[] { "Rev.22.20", "Rev.22.21" })]
+    public void TryExpandReference_VerseRange_ExpandsCorrectly(string input, string[] expected)
+    {
+        var result = _normalizer.TryExpandReference(input, out var expanded);
+
+        Assert.True(result);
+        Assert.Equal(expected.Length, expanded.Count);
+        for (var i = 0; i < expected.Length; i++)
+        {
+            Assert.Equal(expected[i], expanded[i]);
+        }
+    }
+
+    [Theory]
+    [InlineData("Matt.1.1", new[] { "Matt.1.1" })]
+    [InlineData("John 3:16", new[] { "John.3.16" })]
+    [InlineData("1 Cor 13:4", new[] { "1Cor.13.4" })]
+    public void TryExpandReference_SingleVerse_ReturnsSingleReference(string input, string[] expected)
+    {
+        var result = _normalizer.TryExpandReference(input, out var expanded);
+
+        Assert.True(result);
+        Assert.Equal(expected.Length, expanded.Count);
+        Assert.Equal(expected[0], expanded[0]);
+    }
+
+    [Theory]
+    [InlineData("Matt.1.4-1")]  // End verse less than start verse
+    [InlineData("Invalid.1.1-3")]  // Invalid book name
+    [InlineData("")]  // Empty string
+    [InlineData("   ")]  // Whitespace only
+    public void TryExpandReference_InvalidInput_ReturnsFalse(string input)
+    {
+        var result = _normalizer.TryExpandReference(input, out var expanded);
+
+        Assert.False(result);
+        Assert.Empty(expanded);
+    }
+
+    [Fact]
+    public void TryExpandReference_NullInput_ReturnsFalse()
+    {
+        var result = _normalizer.TryExpandReference(null!, out var expanded);
+
+        Assert.False(result);
+        Assert.Empty(expanded);
     }
 
     #endregion
