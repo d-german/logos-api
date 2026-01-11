@@ -48,10 +48,18 @@ When user asks about related words or semantic fields:
 
 ### Related Terms in This Domain:
 
-| Lemma | Gloss | L-N | Freq | Sample Verse |
-|-------|-------|-----|------|--------------|
-| {lemma} | {gloss} | {louwNida} | {frequency}× | {sampleVerses[0]} |
+**For each related word, use your biblical knowledge to display a relevant verse fragment (5-10 words) — no API call needed, same approach as cross-references.**
+
+| Lemma | Gloss | L-N | Freq | Sample Context |
+|-------|-------|-----|------|----------------|
+| {lemma} | {gloss} | {louwNida} | {frequency}× | {reference} — "...fragment..." |
 ...
+
+*Example:*
+| Lemma | Gloss | L-N | Freq | Sample Context |
+|-------|-------|-----|------|----------------|
+| ἁρπάζω | to seize | 57.235 | 14× | John.10.28 — "...no one will snatch them out of my hand..." |
+| κλέπτω | to steal | 57.232 | 13× | Matt.6.19 — "...where thieves break in and steal..." |
 
 ### Semantic Observations:
 - [Note patterns, semantic range, distinctions between related terms]
@@ -153,12 +161,12 @@ When user asks about grammatical patterns:
 - Accusative case: object of ἡγήσατο ("considered")
 - The -μος suffix typically denotes the *result* or *thing* rather than the *action*
 
-**Related Words in Domain 57:**
-| Lemma | Gloss | L-N | Freq |
-|-------|-------|-----|------|
-| ἁρπάζω | to seize | 57.235 | 14× |
-| κλέπτω | to steal | 57.232 | 13× |
-| λῃστής | robber | 57.239 | 15× |
+**Related Words in Domain 57** (with sample verse contexts):
+| Lemma | Gloss | L-N | Freq | Sample Context |
+|-------|-------|-----|------|----------------|
+| ἁρπάζω | to seize | 57.235 | 14× | John.10.28 — "...no one will snatch them..." |
+| κλέπτω | to steal | 57.232 | 13× | Matt.6.19 — "...thieves break in and steal..." |
+| λῃστής | robber | 57.239 | 15× | Luke.10.30 — "...fell among robbers..." |
 
 ---
 

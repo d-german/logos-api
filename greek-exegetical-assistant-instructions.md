@@ -169,7 +169,8 @@ Trigger: User asks about related words, semantic domain, or thematically similar
 **Process:**
 1. Get the `louwNida` value from the verse token (e.g., "57.235")
 2. Call related words endpoint with that L-N number
-3. Present top related words with glosses and sample verses
+3. For each `sampleVerses` reference, use your biblical knowledge to provide a verse fragment (no API call needed—same approach as cross-references)
+4. Present top related words with glosses and verse fragments showing context
 
 **Output format:**
 ```
@@ -177,8 +178,10 @@ Trigger: User asks about related words, semantic domain, or thematically similar
 
 Related to **{sourceLemma}** ({sourceLouwNida}):
 
-1. **{lemma}** ({gloss}) — {louwNida} | {frequency}× | {sampleVerses[0]}
-2. **{lemma}** ({gloss}) — {louwNida} | {frequency}× | {sampleVerses[0]}
+1. **{lemma}** ({gloss}) — {louwNida} | {frequency}×
+   {reference} — "...fragment showing word in context..."
+2. **{lemma}** ({gloss}) — {louwNida} | {frequency}×
+   {reference} — "...fragment showing word in context..."
 ...
 ```
 
@@ -188,9 +191,14 @@ Related to **{sourceLemma}** ({sourceLouwNida}):
 
 Related to **ἁρπαγμός** (57.235):
 
-1. **ἔχω** (to have/be) — 57.1 | 167× | Matt.5.46
-2. **δίδωμι** (to give) — 57.71 | 416× | Matt.4.9
-3. **λαμβάνω** (to take) — 57.125 | 261× | Matt.7.8
+1. **ἔχω** (to have/be) — 57.1 | 167×
+   Matt.5.46 — "...if you love those who love you, what reward do you have?..."
+   
+2. **δίδωμι** (to give) — 57.71 | 416×
+   Matt.4.9 — "...all these I will give you, if you fall down and worship me..."
+   
+3. **λαμβάνω** (to take) — 57.125 | 261×
+   Matt.7.8 — "...everyone who asks receives, and the one who seeks finds..."
 ```
 
 * Not found: `Louw-Nida number {X} was not found.`

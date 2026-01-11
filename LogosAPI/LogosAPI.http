@@ -1,4 +1,4 @@
-@LogosAPI_HostAddress = http://localhost:5133
+@LogosAPI_HostAddress = https://wispy-koi-d-german-8684f0e9.koyeb.app/
 
 ### Get list of verses
 GET {{LogosAPI_HostAddress}}/api/verses/John.3.16
