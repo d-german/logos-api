@@ -32,6 +32,7 @@ public sealed class CommentaryController : ControllerBase
     /// <param name="reference">Verse reference (e.g., "John.1.3", "Jn 1:3", "Gen.1.1")</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Commentary for the specified verse</returns>
+    [HttpGet("{commentaryId}/{reference}")]
     public async Task<ActionResult<CommentaryLookupResponse>> GetCommentary(
         string commentaryId,
         string reference,
@@ -79,6 +80,7 @@ public sealed class CommentaryController : ControllerBase
     /// <param name="verseReferences">One or more verse references (e.g., "John.1.3", "Rom.8.28")</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Commentary from all sources for the specified verses</returns>
+    [HttpGet("all")]
     public async Task<ActionResult<AllCommentariesLookupResponse>> GetAllCommentaries(
         [FromQuery] string[] verseReferences,
         CancellationToken cancellationToken)
