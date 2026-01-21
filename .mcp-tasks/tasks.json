@@ -1,0 +1,17 @@
+{
+  "tasks": [
+    {
+      "id": "3439d179-59d9-401c-8c94-db3c18bf7b57",
+      "name": "Test Task - Verify MCP Server Integration",
+      "description": "Why do programmers prefer dark mode? Because light attracts bugs! \uD83D\uDC1B\uD83D\uDCA1\n\nThis test task validates that the task-and-research MCP server is properly configured and operational within the Logos API project. It demonstrates the complete task lifecycle: creation, analysis, reflection, and splitting.",
+      "notes": "This is a meta-task for infrastructure validation, not a feature implementation task.",
+      "status": "Pending",
+      "dependencies": [],
+      "createdAt": "2026-01-11T13:52:52.7557542-06:00",
+      "updatedAt": "2026-01-11T13:52:52.7759692-06:00",
+      "relatedFiles": [],
+      "implementationGuide": "No code implementation required. This task tests the task management infrastructure itself.",
+      "verificationCriteria": "- Task successfully created in .mcp-tasks/ directory\n- Task analysis workflow completed\n- Task reflection performed\n- Task splitting demonstrated\n- All MCP server tools accessible"
+    }
+  ]
+}

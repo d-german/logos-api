@@ -35,6 +35,9 @@ bld/
 
 # VS Code
 .vscode/
+# Keep template files but ignore user-specific config
+!.vscode/*.template
+.vscode/mcp.json
 
 # NUNIT
 *.VisualState.xml
